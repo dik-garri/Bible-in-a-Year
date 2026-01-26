@@ -6,52 +6,6 @@ const CHAT_ID = 'YOUR_CHAT_ID'; // Обычно начинается с мину
 // URL вашего просмотрщика на GitHub Pages
 const VIEWER_URL = 'https://dik-garri.github.io/Bible-in-a-Year/viewer/';
 
-// Список книг для валидации
-const BOOK_NAMES = [
-  // Ветхий Завет
-  'Бытие', 'Исход', 'Левит', 'Числа', 'Второзаконие',
-  'Иисус Навин', 'Судьи', 'Руфь', '1 Царств', '2 Царств',
-  '3 Царств', '4 Царств', '1 Паралипоменон', '2 Паралипоменон',
-  'Ездра', 'Неемия', 'Есфирь', 'Иов', 'Псалтирь', 'Притчи',
-  'Екклесиаст', 'Песня Песней', 'Исаия', 'Иеремия', 'Плач Иеремии',
-  'Иезекииль', 'Даниил', 'Осия', 'Иоиль', 'Амос', 'Авдий',
-  'Иона', 'Михей', 'Наум', 'Аввакум', 'Софония', 'Аггей',
-  'Захария', 'Малахия',
-  // Новый Завет
-  'Матфея', 'Марка', 'Луки', 'Иоанна', 'Деяния', 'Римлянам',
-  '1 Коринфянам', '2 Коринфянам', 'Галатам', 'Ефесянам',
-  'Филиппийцам', 'Колоссянам', '1 Фессалоникийцам', '2 Фессалоникийцам',
-  '1 Тимофею', '2 Тимофею', 'Титу', 'Филимону', 'Евреям',
-  'Иакова', '1 Петра', '2 Петра', '1 Иоанна', '2 Иоанна',
-  '3 Иоанна', 'Иуды', 'Откровение'
-];
-
-
-/**
- * Парсит строку чтения и извлекает части
- * "Бытие 1-3; Матфея 5:1-26" → [{query: "Бытие 1-3", book: "Бытие"}, ...]
- */
-function parseReadingText(text) {
-  const parts = text.split(';').map(s => s.trim());
-  const readings = [];
-
-  for (const part of parts) {
-    // Матч: "Книга ..." - извлекаем название книги и полный запрос
-    const match = part.match(/^(.+?)\s+(\d+.*)$/);
-    if (match) {
-      const bookName = match[1].trim();
-      if (BOOK_NAMES.includes(bookName)) {
-        readings.push({
-          query: part,  // полный запрос: "Бытие 1-3"
-          book: bookName
-        });
-      }
-    }
-  }
-
-  return readings;
-}
-
 /**
  * Генерирует URL для просмотрщика
  * @param {string} query - запрос (Бытие 1-3)
@@ -62,27 +16,22 @@ function getViewerUrl(query, translation) {
 }
 
 /**
- * Создаёт inline keyboard с кнопками для чтения
- * @param {Array} readings - массив из parseReadingText
+ * Создаёт inline keyboard с 2 кнопками для чтения
+ * @param {string} readingText - полный текст чтения (Бытие 1-3; Матфея 5)
  */
-function buildReadingKeyboard(readings) {
-  const keyboard = [];
-
-  for (const reading of readings) {
-    const row = [
+function buildReadingKeyboard(readingText) {
+  return {
+    inline_keyboard: [[
       {
-        text: `${reading.book} (Синод)`,
-        url: getViewerUrl(reading.query, 'synod')
+        text: 'Синодальный',
+        url: getViewerUrl(readingText, 'synod')
       },
       {
-        text: `${reading.book} (НРП)`,
-        url: getViewerUrl(reading.query, 'nrt')
+        text: 'НРП',
+        url: getViewerUrl(readingText, 'nrt')
       }
-    ];
-    keyboard.push(row);
-  }
-
-  return { inline_keyboard: keyboard };
+    ]]
+  };
 }
 
 function sendReadingFromSheet() {
@@ -111,9 +60,8 @@ function sendReadingFromSheet() {
     let formattedReading = readingText.split(';').map(s => s.trim()).join('\n');
     const message = "📖 *Тексты на сегодня:*\n" + formattedReading;
 
-    // Парсим текст и создаём кнопки
-    const readings = parseReadingText(readingText);
-    const keyboard = buildReadingKeyboard(readings);
+    // Создаём 2 кнопки (Синодальный / НРП)
+    const keyboard = buildReadingKeyboard(readingText);
 
     sendToTelegram(message, keyboard);
   } else {
