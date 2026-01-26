@@ -3,96 +3,48 @@
 const TELEGRAM_TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN';
 const CHAT_ID = 'YOUR_CHAT_ID'; // Обычно начинается с минуса, например -100123456789
 
-// Маппинг русских названий книг на коды only.bible
-const BOOK_CODES = {
+// URL вашего просмотрщика на GitHub Pages
+const VIEWER_URL = 'https://dik-garri.github.io/Bible-in-a-Year/viewer/';
+
+// Список книг для валидации
+const BOOK_NAMES = [
   // Ветхий Завет
-  'Бытие': 'gen',
-  'Исход': 'exo',
-  'Левит': 'lev',
-  'Числа': 'num',
-  'Второзаконие': 'deu',
-  'Иисус Навин': 'jos',
-  'Судьи': 'jdg',
-  'Руфь': 'rut',
-  '1 Царств': '1sa',
-  '2 Царств': '2sa',
-  '3 Царств': '1ki',
-  '4 Царств': '2ki',
-  '1 Паралипоменон': '1ch',
-  '2 Паралипоменон': '2ch',
-  'Ездра': 'ezr',
-  'Неемия': 'neh',
-  'Есфирь': 'est',
-  'Иов': 'job',
-  'Псалтирь': 'psa',
-  'Притчи': 'pro',
-  'Екклесиаст': 'ecc',
-  'Песня Песней': 'sng',
-  'Исаия': 'isa',
-  'Иеремия': 'jer',
-  'Плач Иеремии': 'lam',
-  'Иезекииль': 'ezk',
-  'Даниил': 'dan',
-  'Осия': 'hos',
-  'Иоиль': 'jol',
-  'Амос': 'amo',
-  'Авдий': 'oba',
-  'Иона': 'jon',
-  'Михей': 'mic',
-  'Наум': 'nam',
-  'Аввакум': 'hab',
-  'Софония': 'zep',
-  'Аггей': 'hag',
-  'Захария': 'zec',
-  'Малахия': 'mal',
+  'Бытие', 'Исход', 'Левит', 'Числа', 'Второзаконие',
+  'Иисус Навин', 'Судьи', 'Руфь', '1 Царств', '2 Царств',
+  '3 Царств', '4 Царств', '1 Паралипоменон', '2 Паралипоменон',
+  'Ездра', 'Неемия', 'Есфирь', 'Иов', 'Псалтирь', 'Притчи',
+  'Екклесиаст', 'Песня Песней', 'Исаия', 'Иеремия', 'Плач Иеремии',
+  'Иезекииль', 'Даниил', 'Осия', 'Иоиль', 'Амос', 'Авдий',
+  'Иона', 'Михей', 'Наум', 'Аввакум', 'Софония', 'Аггей',
+  'Захария', 'Малахия',
   // Новый Завет
-  'Матфея': 'mat',
-  'Марка': 'mrk',
-  'Луки': 'luk',
-  'Иоанна': 'jhn',
-  'Деяния': 'act',
-  'Римлянам': 'rom',
-  '1 Коринфянам': '1co',
-  '2 Коринфянам': '2co',
-  'Галатам': 'gal',
-  'Ефесянам': 'eph',
-  'Филиппийцам': 'php',
-  'Колоссянам': 'col',
-  '1 Фессалоникийцам': '1th',
-  '2 Фессалоникийцам': '2th',
-  '1 Тимофею': '1ti',
-  '2 Тимофею': '2ti',
-  'Титу': 'tit',
-  'Филимону': 'phm',
-  'Евреям': 'heb',
-  'Иакова': 'jas',
-  '1 Петра': '1pe',
-  '2 Петра': '2pe',
-  '1 Иоанна': '1jn',
-  '2 Иоанна': '2jn',
-  '3 Иоанна': '3jn',
-  'Иуды': 'jud',
-  'Откровение': 'rev'
-};
+  'Матфея', 'Марка', 'Луки', 'Иоанна', 'Деяния', 'Римлянам',
+  '1 Коринфянам', '2 Коринфянам', 'Галатам', 'Ефесянам',
+  'Филиппийцам', 'Колоссянам', '1 Фессалоникийцам', '2 Фессалоникийцам',
+  '1 Тимофею', '2 Тимофею', 'Титу', 'Филимону', 'Евреям',
+  'Иакова', '1 Петра', '2 Петра', '1 Иоанна', '2 Иоанна',
+  '3 Иоанна', 'Иуды', 'Откровение'
+];
 
 
 /**
- * Парсит строку чтения и извлекает книги с первой главой
- * "Бытие 1-3; Матфея 5:1-26" → [{book: "Бытие", chapter: 1}, {book: "Матфея", chapter: 5}]
+ * Парсит строку чтения и извлекает части
+ * "Бытие 1-3; Матфея 5:1-26" → [{query: "Бытие 1-3", book: "Бытие"}, ...]
  */
 function parseReadingText(text) {
   const parts = text.split(';').map(s => s.trim());
   const readings = [];
 
   for (const part of parts) {
-    // Матч: "Книга Глава" или "Книга Глава-Глава" или "Книга Глава:стих-стих"
-    // Примеры: "Бытие 1-3", "Матфея 5:1-26", "1 Коринфянам 13"
-    const match = part.match(/^(.+?)\s+(\d+)/);
+    // Матч: "Книга ..." - извлекаем название книги и полный запрос
+    const match = part.match(/^(.+?)\s+(\d+.*)$/);
     if (match) {
       const bookName = match[1].trim();
-      const chapter = parseInt(match[2], 10);
-      if (BOOK_CODES[bookName]) {
-        readings.push({ book: bookName, code: BOOK_CODES[bookName], chapter: chapter });
+      if (BOOK_NAMES.includes(bookName)) {
+        readings.push({
+          query: part,  // полный запрос: "Бытие 1-3"
+          book: bookName
+        });
       }
     }
   }
@@ -101,13 +53,12 @@ function parseReadingText(text) {
 }
 
 /**
- * Генерирует URL для only.bible
- * @param {string} bookCode - код книги (gen, mat, etc.)
- * @param {number} chapter - номер главы
- * @param {string} translation - rst78 (Синод) или nrt (НРП)
+ * Генерирует URL для просмотрщика
+ * @param {string} query - запрос (Бытие 1-3)
+ * @param {string} translation - synod или nrt
  */
-function getBibleUrl(bookCode, chapter, translation) {
-  return `https://only.bible/bible/${translation}/${bookCode}-${chapter}/`;
+function getViewerUrl(query, translation) {
+  return VIEWER_URL + '?q=' + encodeURIComponent(query) + '&t=' + translation;
 }
 
 /**
@@ -121,11 +72,11 @@ function buildReadingKeyboard(readings) {
     const row = [
       {
         text: `${reading.book} (Синод)`,
-        url: getBibleUrl(reading.code, reading.chapter, 'rst78')
+        url: getViewerUrl(reading.query, 'synod')
       },
       {
         text: `${reading.book} (НРП)`,
-        url: getBibleUrl(reading.code, reading.chapter, 'nrt')
+        url: getViewerUrl(reading.query, 'nrt')
       }
     ];
     keyboard.push(row);
@@ -171,10 +122,6 @@ function sendReadingFromSheet() {
 }
 
 
-
-
-
-
 function sendToTelegram(text, keyboard) {
   const url = "https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage";
   const payload = {
@@ -195,8 +142,6 @@ function sendToTelegram(text, keyboard) {
 }
 
 
-
-
 /**
  * Получает данные "Библия за год" по API ODB.
  *
@@ -207,21 +152,21 @@ function sendToTelegram(text, keyboard) {
 function GET_BIBLE_PLAN(dateString) {
   // Базовая ссылка API
   var url = "https://api.experience.odb.org/devotionals/v2?site_id=18&status=publish&country=KG&on=" + dateString;
-  
+
   try {
     // Делаем запрос
     var response = UrlFetchApp.fetch(url);
     var json = JSON.parse(response.getContentText());
-    
+
     // Получаем поле с чтением (оно содержит HTML теги)
     // Данные лежат в первом элементе массива [0]
     var rawHtml = json[0].bible_in_a_year;
-    
+
     // Удаляем HTML теги (<a href...>), чтобы остался чистый текст
     var cleanText = rawHtml.replace(/<[^>]+>/g, '');
-    
+
     return cleanText;
-    
+
   } catch (e) {
     return "Ошибка: " + e.message;
   }
