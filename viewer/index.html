@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Библия — Просмотр текстов</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f0;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #4a4a4a;
+    }
+    .input-section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+    .translation-toggle {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .translation-toggle button {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+      border: 2px solid #666;
+      background: white;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .translation-toggle button.active {
+      background: #4a4a4a;
+      color: white;
+    }
+    .translation-toggle button:hover:not(.active) {
+      background: #eee;
+    }
+    button.show-btn {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      background: #5c7cfa;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button.show-btn:hover {
+      background: #4263eb;
+    }
+    .examples {
+      font-size: 13px;
+      color: #666;
+      margin-top: 10px;
+    }
+    .examples code {
+      background: #eee;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    /* Book Picker Styles */
+    .picker-section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .picker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .picker-header h3 {
+      margin: 0;
+      color: #4a4a4a;
+    }
+    .picker-breadcrumb {
+      font-size: 13px;
+      color: #888;
+    }
+    .picker-breadcrumb span {
+      cursor: pointer;
+      color: #5c7cfa;
+    }
+    .picker-breadcrumb span:hover {
+      text-decoration: underline;
+    }
+    .testament-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .testament-buttons button {
+      flex: 1;
+      padding: 12px;
+      font-size: 15px;
+      border: 2px solid #5c7cfa;
+      background: white;
+      color: #5c7cfa;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .testament-buttons button:hover {
+      background: #5c7cfa;
+      color: white;
+    }
+    .testament-buttons button.active {
+      background: #5c7cfa;
+      color: white;
+    }
+    .books-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+    .books-grid button {
+      padding: 10px 8px;
+      font-size: 13px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    .books-grid button:hover {
+      background: #5c7cfa;
+      color: white;
+      border-color: #5c7cfa;
+    }
+    .chapters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+      gap: 6px;
+    }
+    .chapters-grid button {
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .chapters-grid button:hover {
+      background: #5c7cfa;
+      color: white;
+      border-color: #5c7cfa;
+    }
+    .picker-content {
+      min-height: 100px;
+    }
+    .back-btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      border: 1px solid #888;
+      background: white;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+    .back-btn:hover {
+      background: #eee;
+    }
+
+    .content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .book-section {
+      margin-bottom: 30px;
+    }
+    .book-title {
+      font-size: 1.4em;
+      color: #4a4a4a;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+    .chapter {
+      margin-bottom: 20px;
+    }
+    .chapter-title {
+      font-size: 1.1em;
+      color: #666;
+      margin-bottom: 10px;
+    }
+    .verse {
+      margin-bottom: 8px;
+      line-height: 1.6;
+    }
+    .verse-num {
+      font-weight: bold;
+      color: #888;
+      font-size: 0.85em;
+      margin-right: 4px;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    .error {
+      color: #c92a2a;
+      padding: 20px;
+      background: #ffe3e3;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📖 Библия</h1>
+
+  <!-- Book Picker -->
+  <div class="picker-section">
+    <div class="picker-header">
+      <h3>Выбор книги</h3>
+      <div class="picker-breadcrumb" id="breadcrumb"></div>
+    </div>
+    <div class="picker-content" id="picker-content">
+      <div class="testament-buttons">
+        <button onclick="showTestament('ot')">Ветхий Завет</button>
+        <button onclick="showTestament('nt')">Новый Завет</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual Input -->
+  <div class="input-section">
+    <label for="query">Или введите вручную:</label>
+    <input type="text" id="query" placeholder="Бытие 1-3; Матфея 1">
+
+    <div class="translation-toggle">
+      <button id="btn-synod" class="active" onclick="setTranslation('synod')">Синодальный</button>
+      <button id="btn-nrt" onclick="setTranslation('nrt')">НРП</button>
+    </div>
+
+    <button class="show-btn" onclick="showTexts()">Показать тексты</button>
+
+    <div class="examples">
+      Примеры: <code>Бытие 1-3</code> · <code>Бытие 1:5</code> · <code>Бытие 1:5-10</code> · <code>Бытие 1:28-2:3</code> · <code>Бытие 1; Матфея 1</code>
+    </div>
+  </div>
+
+  <div id="content" class="content">
+    <p style="color: #888; text-align: center;">Выберите книгу и главу или введите запрос вручную</p>
+  </div>
+
+  <script>
+    const bookCache = {};  // { 'synod:gn': [...chapters], 'nrt:gn': [...] }
+    let currentTranslation = 'synod';
+
+    // Книги Ветхого Завета: [название, аббревиатура, кол-во глав]
+    const OT_BOOKS = [
+      ['Бытие', 'gn', 50], ['Исход', 'ex', 40], ['Левит', 'lv', 27], ['Числа', 'nm', 36],
+      ['Второзаконие', 'dt', 34], ['Иисус Навин', 'js', 24], ['Судьи', 'jud', 21], ['Руфь', 'rt', 4],
+      ['1 Царств', '1sm', 31], ['2 Царств', '2sm', 24], ['3 Царств', '1kgs', 22], ['4 Царств', '2kgs', 25],
+      ['1 Паралипоменон', '1ch', 29], ['2 Паралипоменон', '2ch', 36], ['Ездра', 'ezr', 10], ['Неемия', 'ne', 13],
+      ['Есфирь', 'et', 10], ['Иов', 'job', 42], ['Псалтирь', 'ps', 150], ['Притчи', 'prv', 31],
+      ['Екклесиаст', 'ec', 12], ['Песня Песней', 'so', 8], ['Исаия', 'is', 66], ['Иеремия', 'jr', 52],
+      ['Плач Иеремии', 'lm', 5], ['Иезекииль', 'ez', 48], ['Даниил', 'dn', 12], ['Осия', 'ho', 14],
+      ['Иоиль', 'jl', 3], ['Амос', 'am', 9], ['Авдий', 'ob', 1], ['Иона', 'jn', 4],
+      ['Михей', 'mi', 7], ['Наум', 'na', 3], ['Аввакум', 'hk', 3], ['Софония', 'zp', 3],
+      ['Аггей', 'hg', 2], ['Захария', 'zc', 14], ['Малахия', 'ml', 4]
+    ];
+
+    // Книги Нового Завета
+    const NT_BOOKS = [
+      ['Матфея', 'mt', 28], ['Марка', 'mk', 16], ['Луки', 'lk', 24], ['Иоанна', 'jo', 21],
+      ['Деяния', 'act', 28], ['Римлянам', 'rm', 16], ['1 Коринфянам', '1co', 16], ['2 Коринфянам', '2co', 13],
+      ['Галатам', 'gl', 6], ['Ефесянам', 'eph', 6], ['Филиппийцам', 'ph', 4], ['Колоссянам', 'cl', 4],
+      ['1 Фессалоникийцам', '1ts', 5], ['2 Фессалоникийцам', '2ts', 3], ['1 Тимофею', '1tm', 6], ['2 Тимофею', '2tm', 4],
+      ['Титу', 'tt', 3], ['Филимону', 'phm', 1], ['Евреям', 'hb', 13], ['Иакова', 'jm', 5],
+      ['1 Петра', '1pe', 5], ['2 Петра', '2pe', 3], ['1 Иоанна', '1jo', 5], ['2 Иоанна', '2jo', 1],
+      ['3 Иоанна', '3jo', 1], ['Иуды', 'jd', 1], ['Откровение', 're', 22]
+    ];
+
+    // Маппинг русских названий на аббревиатуры
+    const BOOK_MAP = {
+      'бытие': 'gn', 'исход': 'ex', 'левит': 'lv', 'числа': 'nm', 'второзаконие': 'dt',
+      'иисус навин': 'js', 'навин': 'js', 'судьи': 'jud', 'руфь': 'rt',
+      '1 царств': '1sm', '2 царств': '2sm', '3 царств': '1kgs', '4 царств': '2kgs',
+      '1царств': '1sm', '2царств': '2sm', '3царств': '1kgs', '4царств': '2kgs',
+      '1 паралипоменон': '1ch', '2 паралипоменон': '2ch',
+      '1паралипоменон': '1ch', '2паралипоменон': '2ch',
+      'ездра': 'ezr', 'неемия': 'ne', 'есфирь': 'et', 'иов': 'job',
+      'псалтирь': 'ps', 'псалом': 'ps', 'притчи': 'prv',
+      'екклесиаст': 'ec', 'песня песней': 'so', 'песнь песней': 'so',
+      'исаия': 'is', 'иеремия': 'jr', 'плач иеремии': 'lm',
+      'иезекииль': 'ez', 'даниил': 'dn',
+      'осия': 'ho', 'иоиль': 'jl', 'амос': 'am', 'авдий': 'ob',
+      'иона': 'jn', 'михей': 'mi', 'наум': 'na', 'аввакум': 'hk',
+      'софония': 'zp', 'аггей': 'hg', 'захария': 'zc', 'малахия': 'ml',
+      'матфея': 'mt', 'от матфея': 'mt', 'марка': 'mk', 'от марка': 'mk',
+      'луки': 'lk', 'от луки': 'lk', 'иоанна': 'jo', 'от иоанна': 'jo',
+      'деяния': 'act', 'римлянам': 'rm',
+      '1 коринфянам': '1co', '2 коринфянам': '2co',
+      '1коринфянам': '1co', '2коринфянам': '2co',
+      'галатам': 'gl', 'ефесянам': 'eph', 'филиппийцам': 'ph', 'колоссянам': 'cl',
+      '1 фессалоникийцам': '1ts', '2 фессалоникийцам': '2ts',
+      '1фессалоникийцам': '1ts', '2фессалоникийцам': '2ts',
+      '1 тимофею': '1tm', '2 тимофею': '2tm',
+      '1тимофею': '1tm', '2тимофею': '2tm',
+      'титу': 'tt', 'филимону': 'phm', 'евреям': 'hb', 'иакова': 'jm',
+      '1 петра': '1pe', '2 петра': '2pe',
+      '1петра': '1pe', '2петра': '2pe',
+      '1 иоанна': '1jo', '2 иоанна': '2jo', '3 иоанна': '3jo',
+      '1иоанна': '1jo', '2иоанна': '2jo', '3иоанна': '3jo',
+      'иуды': 'jd', 'откровение': 're', 'апокалипсис': 're'
+    };
+
+    // Русские названия для отображения
+    const BOOK_NAMES = {
+      'gn': 'Бытие', 'ex': 'Исход', 'lv': 'Левит', 'nm': 'Числа', 'dt': 'Второзаконие',
+      'js': 'Иисус Навин', 'jud': 'Судьи', 'rt': 'Руфь', '1sm': '1 Царств', '2sm': '2 Царств',
+      '1kgs': '3 Царств', '2kgs': '4 Царств', '1ch': '1 Паралипоменон', '2ch': '2 Паралипоменон',
+      'ezr': 'Ездра', 'ne': 'Неемия', 'et': 'Есфирь', 'job': 'Иов', 'ps': 'Псалтирь',
+      'prv': 'Притчи', 'ec': 'Екклесиаст', 'so': 'Песня Песней', 'is': 'Исаия',
+      'jr': 'Иеремия', 'lm': 'Плач Иеремии', 'ez': 'Иезекииль', 'dn': 'Даниил',
+      'ho': 'Осия', 'jl': 'Иоиль', 'am': 'Амос', 'ob': 'Авдий', 'jn': 'Иона',
+      'mi': 'Михей', 'na': 'Наум', 'hk': 'Аввакум', 'zp': 'Софония', 'hg': 'Аггей',
+      'zc': 'Захария', 'ml': 'Малахия', 'mt': 'Матфея', 'mk': 'Марка', 'lk': 'Луки',
+      'jo': 'Иоанна', 'act': 'Деяния', 'rm': 'Римлянам', '1co': '1 Коринфянам',
+      '2co': '2 Коринфянам', 'gl': 'Галатам', 'eph': 'Ефесянам', 'ph': 'Филиппийцам',
+      'cl': 'Колоссянам', '1ts': '1 Фессалоникийцам', '2ts': '2 Фессалоникийцам',
+      '1tm': '1 Тимофею', '2tm': '2 Тимофею', 'tt': 'Титу', 'phm': 'Филимону',
+      'hb': 'Евреям', 'jm': 'Иакова', '1pe': '1 Петра', '2pe': '2 Петра',
+      '1jo': '1 Иоанна', '2jo': '2 Иоанна', '3jo': '3 Иоанна', 'jd': 'Иуды', 're': 'Откровение'
+    };
+
+    let currentTestament = null;
+    let currentBook = null;
+
+    function updateBreadcrumb() {
+      const bc = document.getElementById('breadcrumb');
+      let html = '<span onclick="resetPicker()">Выбор</span>';
+      if (currentTestament) {
+        html += ` → <span onclick="showTestament(\'${currentTestament}\')">${currentTestament === 'ot' ? 'ВЗ' : 'НЗ'}</span>`;
+      }
+      if (currentBook) {
+        html += ` → ${currentBook[0]}`;
+      }
+      bc.innerHTML = html;
+    }
+
+    function resetPicker() {
+      currentTestament = null;
+      currentBook = null;
+      document.getElementById('picker-content').innerHTML = `
+        <div class="testament-buttons">
+          <button onclick="showTestament('ot')">Ветхий Завет</button>
+          <button onclick="showTestament('nt')">Новый Завет</button>
+        </div>
+      `;
+      updateBreadcrumb();
+    }
+
+    function showTestament(testament) {
+      currentTestament = testament;
+      currentBook = null;
+      const books = testament === 'ot' ? OT_BOOKS : NT_BOOKS;
+
+      let html = '<button class="back-btn" onclick="resetPicker()">← Назад</button>';
+      html += '<div class="books-grid">';
+      for (const book of books) {
+        html += `<button onclick="showBook('${book[0]}', '${book[1]}', ${book[2]})">${book[0]}</button>`;
+      }
+      html += '</div>';
+
+      document.getElementById('picker-content').innerHTML = html;
+      updateBreadcrumb();
+    }
+
+    function showBook(name, abbrev, chapters) {
+      currentBook = [name, abbrev, chapters];
+
+      let html = `<button class="back-btn" onclick="showTestament('${currentTestament}')">← Назад к книгам</button>`;
+      html += '<div class="chapters-grid">';
+      for (let i = 1; i <= chapters; i++) {
+        html += `<button onclick="selectChapter('${name}', ${i})">${i}</button>`;
+      }
+      html += '</div>';
+
+      document.getElementById('picker-content').innerHTML = html;
+      updateBreadcrumb();
+    }
+
+    function selectChapter(bookName, chapter) {
+      const query = `${bookName} ${chapter}`;
+      document.getElementById('query').value = query;
+      showTexts();
+    }
+
+    function setTranslation(t) {
+      currentTranslation = t;
+      document.getElementById('btn-synod').classList.toggle('active', t === 'synod');
+      document.getElementById('btn-nrt').classList.toggle('active', t === 'nrt');
+    }
+
+    async function loadBook(abbrev) {
+      const cacheKey = `${currentTranslation}:${abbrev}`;
+      if (bookCache[cacheKey]) return bookCache[cacheKey];
+
+      const dir = currentTranslation === 'synod' ? 'synodal' : 'nrt';
+      const file = `../data/${dir}/${abbrev}.json`;
+
+      try {
+        const response = await fetch(file);
+        if (!response.ok) throw new Error('Файл не найден');
+        const chapters = await response.json();
+        bookCache[cacheKey] = chapters;
+        return chapters;
+      } catch (e) {
+        throw new Error(`Не удалось загрузить ${file}: ${e.message}`);
+      }
+    }
+
+    function parseQuery(query) {
+      // Форматы:
+      // "Бытие 1" → глава 1, все стихи
+      // "Бытие 1-3" → главы 1-3, все стихи
+      // "Бытие 1:5" → глава 1, стих 5
+      // "Бытие 1:5-10" → глава 1, стихи 5-10
+      // "Бытие 1:5-2:3" → от главы 1 стих 5 до главы 2 стих 3
+      // "Бытие 1-2:3" → от главы 1 стих 1 до главы 2 стих 3
+      const parts = query.split(';').map(s => s.trim()).filter(s => s);
+      const result = [];
+
+      for (const part of parts) {
+        const match = part.match(/^(.+?)\s+(\d+)(?::(\d+))?(?:-(\d+)(?::(\d+))?)?$/);
+
+        if (match) {
+          const bookName = match[1].trim().toLowerCase();
+          const abbrev = BOOK_MAP[bookName];
+
+          if (!abbrev) {
+            console.warn('Книга не найдена:', bookName);
+            continue;
+          }
+
+          const num1 = parseInt(match[2]);
+          const num2 = match[3] ? parseInt(match[3]) : null;
+          const num3 = match[4] ? parseInt(match[4]) : null;
+          const num4 = match[5] ? parseInt(match[5]) : null;
+
+          let chapterStart, chapterEnd, verseStart, verseEnd;
+
+          if (num2 === null && num4 === null) {
+            chapterStart = num1;
+            chapterEnd = num3 !== null ? num3 : num1;
+            verseStart = null;
+            verseEnd = null;
+          } else if (num2 === null && num4 !== null) {
+            chapterStart = num1;
+            verseStart = 1;
+            chapterEnd = num3;
+            verseEnd = num4;
+          } else {
+            chapterStart = num1;
+            verseStart = num2;
+
+            if (num4 !== null) {
+              chapterEnd = num3;
+              verseEnd = num4;
+            } else if (num3 !== null) {
+              chapterEnd = num1;
+              verseEnd = num3;
+            } else {
+              chapterEnd = num1;
+              verseEnd = num2;
+            }
+          }
+
+          result.push({
+            abbrev,
+            chapterStart,
+            chapterEnd,
+            verseStart,
+            verseEnd
+          });
+        }
+      }
+
+      return result;
+    }
+
+    function renderTexts(parsed, loadedBooks) {
+      let html = '';
+
+      for (const item of parsed) {
+        const chapters = loadedBooks[item.abbrev];
+        if (!chapters) {
+          html += `<div class="error">Книга не найдена: ${item.abbrev}</div>`;
+          continue;
+        }
+
+        const bookName = BOOK_NAMES[item.abbrev] || item.abbrev;
+        html += `<div class="book-section"><div class="book-title">${bookName}</div>`;
+
+        for (let ch = item.chapterStart; ch <= item.chapterEnd; ch++) {
+          const chapterIdx = ch - 1;
+          if (chapterIdx < 0 || chapterIdx >= chapters.length) {
+            html += `<div class="error">Глава ${ch} не найдена</div>`;
+            continue;
+          }
+
+          const verses = chapters[chapterIdx];
+          html += `<div class="chapter"><div class="chapter-title">Глава ${ch}</div>`;
+
+          let vStart = 1;
+          let vEnd = verses.length;
+
+          if (item.verseStart !== null) {
+            if (ch === item.chapterStart && ch === item.chapterEnd) {
+              vStart = item.verseStart;
+              vEnd = item.verseEnd;
+            } else if (ch === item.chapterStart) {
+              vStart = item.verseStart;
+            } else if (ch === item.chapterEnd) {
+              vEnd = item.verseEnd;
+            }
+          }
+
+          for (let v = vStart; v <= vEnd && v <= verses.length; v++) {
+            const text = verses[v - 1];
+            html += `<div class="verse"><span class="verse-num">${v}</span>${text}</div>`;
+          }
+
+          html += '</div>';
+        }
+
+        html += '</div>';
+      }
+
+      return html;
+    }
+
+    async function showTexts() {
+      const query = document.getElementById('query').value.trim();
+      const content = document.getElementById('content');
+
+      if (!query) {
+        content.innerHTML = '<p style="color: #888; text-align: center;">Выберите книгу и главу или введите запрос вручную</p>';
+        return;
+      }
+
+      content.innerHTML = '<div class="loading">Загрузка...</div>';
+
+      try {
+        const parsed = parseQuery(query);
+
+        if (parsed.length === 0) {
+          content.innerHTML = '<div class="error">Не удалось распознать запрос. Проверьте формат.</div>';
+          return;
+        }
+
+        // Загрузить только нужные книги
+        const abbrevs = [...new Set(parsed.map(p => p.abbrev))];
+        const loadedBooks = {};
+        await Promise.all(abbrevs.map(async (abbrev) => {
+          loadedBooks[abbrev] = await loadBook(abbrev);
+        }));
+
+        content.innerHTML = renderTexts(parsed, loadedBooks);
+      } catch (e) {
+        content.innerHTML = `<div class="error">${e.message}</div>`;
+      }
+    }
+
+    document.getElementById('query').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') showTexts();
+    });
+
+    // Загрузка из URL-параметров
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get('q');
+      const translation = params.get('t');
+
+      if (translation === 'nrt' || translation === 'synod') {
+        setTranslation(translation);
+      }
+
+      if (query) {
+        document.getElementById('query').value = query;
+        showTexts();
+      }
+    })();
+  </script>
+</body>
+</html>
