@@ -26,20 +26,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Trigger:** Daily time-based trigger on `sendReadingFromSheet()`
 
 **Key functions:**
-- `sendReadingFromSheet()` — Finds today's reading, sends message with inline keyboard
-- `parseReadingText(text)` — Parses "Бытие 1-3; Матфея 5:1-26" into structured data
-- `buildReadingKeyboard(readings)` — Creates inline URL buttons for only.bible
+- `sendReadingFromSheet()` — Finds today's reading, sends message with 2 buttons
+- `buildReadingKeyboard(readingText)` — Creates 2 inline URL buttons (Синодальный / НРП)
+- `getViewerUrl(query, translation)` — Generates GitHub Pages viewer URL
 - `GET_BIBLE_PLAN(dateString)` — Custom spreadsheet function fetching from ODB API
 
-**Inline buttons link to:** `https://only.bible/bible/{translation}/{book}-{chapter}/`
-- Synodal: `rst78`
-- NRP: `nrt`
-
-**Book mapping:** `BOOK_CODES` object maps Russian names → only.bible codes (e.g., "Бытие" → "gen")
+**Inline buttons link to:** `https://dik-garri.github.io/Bible-in-a-Year/viewer/?q={query}&t={translation}`
+- Synodal: `t=synod`
+- NRP: `t=nrt`
 
 ## HTML Viewer (viewer/index.html)
 
-Local viewer using JSON data files. Requires local server due to CORS:
+**GitHub Pages:** https://dik-garri.github.io/Bible-in-a-Year/viewer/
+
+Local development (requires server due to CORS):
 ```bash
 python3 -m http.server 8000
 # Open: http://localhost:8000/viewer/
@@ -88,7 +88,6 @@ No web deployment needed — runs via time trigger only.
 ## External APIs
 
 - **bolls.life:** `GET https://bolls.life/get-chapter/{SYNOD|NRT}/{book}/{chapter}/` — Free Bible API
-- **only.bible:** URL buttons link here for reading
 - **ODB API:** Used by `GET_BIBLE_PLAN` spreadsheet function
 
 ## Configuration
@@ -96,4 +95,5 @@ No web deployment needed — runs via time trigger only.
 In `Code.gs`:
 - `TELEGRAM_TOKEN` — Bot token from @BotFather
 - `CHAT_ID` — Target chat/channel ID (negative for groups/channels)
+- `VIEWER_URL` — GitHub Pages viewer URL
 - Timezone hardcoded: `GMT+6`
