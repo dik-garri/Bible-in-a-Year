@@ -17,7 +17,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ├── viewer/
 │   └── index.html           # Local HTML viewer for Bible texts
 └── scripts/
-    └── download_nrt_incremental.py  # Python script to download NRP via bolls.life API
+    ├── download_nrt_incremental.py  # Python script to download NRP via bolls.life API
+    └── fix_formatting.py            # Fix typography issues in Bible data
 ```
 
 ## Bot (src/Code.gs)
@@ -75,6 +76,27 @@ python3 -m http.server 8000
 - Format: `[["verse1", "verse2", ...], ...]` (just chapters array)
 
 **Book abbreviations:** gn, ex, lv, nm, dt, js, jud, rt, 1sm, 2sm, 1kgs, 2kgs, 1ch, 2ch, ezr, ne, et, job, ps, prv, ec, so, is, jr, lm, ez, dn, ho, jl, am, ob, jn, mi, na, hk, zp, hg, zc, ml, mt, mk, lk, jo, act, rm, 1co, 2co, gl, eph, ph, cl, 1ts, 2ts, 1tm, 2tm, tt, phm, hb, jm, 1pe, 2pe, 1jo, 2jo, 3jo, jd, re
+
+## Data Quality (scripts/fix_formatting.py)
+
+Original data from bolls.life API contained typography issues. Fixed with `fix_formatting.py`:
+
+```bash
+python3 scripts/fix_formatting.py
+```
+
+**Issues fixed (10,338 total):**
+
+| Issue | Synodal | NRP | Example |
+|-------|---------|-----|---------|
+| `:—` → `: —` (direct speech) | 0 | 5,996 | `сказал:—` → `сказал: —` |
+| No space after `,` | 1,600 | 314 | `Нашему,и` → `Нашему, и` |
+| No space after `.` | 68 | 1,532 | `здесь.Иаков` → `здесь. Иаков` |
+| No space after `;` | 168 | 164 | `Симовых;Ханаан` → `Симовых; Ханаан` |
+| No space after `?` | 36 | 256 | `нами?что` → `нами? что` |
+| No space after `!` | 14 | 190 | `мне!И` → `мне! И` |
+
+Run after downloading new data or if issues reappear.
 
 ## Deployment (GAS)
 
