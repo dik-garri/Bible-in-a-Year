@@ -1,7 +1,12 @@
 
 // Вставьте сюда ваши данные (не коммитьте реальные токены!)
 const TELEGRAM_TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN';
-const CHAT_ID = 'YOUR_CHAT_ID'; // Обычно начинается с минуса, например -100123456789
+
+// ID чатов для отправки (группа и канал)
+const CHAT_IDS = [
+  'YOUR_GROUP_ID',   // ID группы (например -100123456789)
+  'YOUR_CHANNEL_ID'  // ID канала (например -100987654321)
+];
 
 // URL вашего просмотрщика на GitHub Pages
 const VIEWER_URL = 'https://dik-garri.github.io/Bible-in-a-Year/viewer/';
@@ -72,20 +77,24 @@ function sendReadingFromSheet() {
 
 function sendToTelegram(text, keyboard) {
   const url = "https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage";
-  const payload = {
-    "chat_id": CHAT_ID,
-    "text": text,
-    "parse_mode": "Markdown"
-  };
 
-  if (keyboard) {
-    payload.reply_markup = keyboard;
-  }
+  // Отправляем во все чаты из списка
+  CHAT_IDS.forEach(chatId => {
+    const payload = {
+      "chat_id": chatId,
+      "text": text,
+      "parse_mode": "Markdown"
+    };
 
-  UrlFetchApp.fetch(url, {
-    "method": "post",
-    "contentType": "application/json",
-    "payload": JSON.stringify(payload)
+    if (keyboard) {
+      payload.reply_markup = keyboard;
+    }
+
+    UrlFetchApp.fetch(url, {
+      "method": "post",
+      "contentType": "application/json",
+      "payload": JSON.stringify(payload)
+    });
   });
 }
 
