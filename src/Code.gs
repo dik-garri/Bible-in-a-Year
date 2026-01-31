@@ -90,11 +90,15 @@ function sendToTelegram(text, keyboard) {
       payload.reply_markup = keyboard;
     }
 
-    UrlFetchApp.fetch(url, {
-      "method": "post",
-      "contentType": "application/json",
-      "payload": JSON.stringify(payload)
-    });
+    try {
+      UrlFetchApp.fetch(url, {
+        "method": "post",
+        "contentType": "application/json",
+        "payload": JSON.stringify(payload)
+      });
+    } catch (e) {
+      console.log('Ошибка отправки в ' + chatId + ': ' + e.message);
+    }
   });
 }
 
