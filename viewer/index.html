@@ -19,12 +19,14 @@
     h1 {
       text-align: center;
       color: #4a4a4a;
+      margin: 5px 0 15px;
+      font-size: 1.4em;
     }
     .input-section {
       background: white;
-      padding: 20px;
+      padding: 12px 15px;
       border-radius: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     label {
@@ -34,20 +36,20 @@
     }
     input[type="text"] {
       width: 100%;
-      padding: 12px;
+      padding: 8px 12px;
       font-size: 16px;
       border: 1px solid #ccc;
       border-radius: 4px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
     .translation-toggle {
       display: flex;
       gap: 10px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
     .translation-toggle button {
       flex: 1;
-      padding: 10px;
+      padding: 8px;
       font-size: 14px;
       border: 2px solid #666;
       background: white;
@@ -64,7 +66,7 @@
     }
     button.show-btn {
       width: 100%;
-      padding: 12px;
+      padding: 8px;
       font-size: 16px;
       background: #5c7cfa;
       color: white;
@@ -89,16 +91,16 @@
     /* Book Picker Styles */
     .picker-section {
       background: white;
-      padding: 20px;
+      padding: 12px 15px;
       border-radius: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .picker-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
     .picker-header h3 {
       margin: 0;
@@ -118,11 +120,11 @@
     .testament-buttons {
       display: flex;
       gap: 10px;
-      margin-bottom: 15px;
+      margin-bottom: 0;
     }
     .testament-buttons button {
       flex: 1;
-      padding: 12px;
+      padding: 8px;
       font-size: 15px;
       border: 2px solid #5c7cfa;
       background: white;
@@ -180,7 +182,6 @@
       border-color: #5c7cfa;
     }
     .picker-content {
-      min-height: 100px;
     }
     .back-btn {
       padding: 8px 16px;
@@ -200,6 +201,7 @@
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-size: 17px;
     }
     .book-section {
       margin-bottom: 30px;
@@ -574,6 +576,7 @@
       const content = document.getElementById('content');
 
       if (!query) {
+        document.title = 'Библия — Просмотр текстов';
         content.innerHTML = '<p style="color: #888; text-align: center;">Выберите книгу и главу или введите запрос вручную</p>';
         return;
       }
@@ -595,6 +598,7 @@
           loadedBooks[abbrev] = await loadBook(abbrev);
         }));
 
+        document.title = query + ' — Библия';
         content.innerHTML = renderTexts(parsed, loadedBooks);
       } catch (e) {
         content.innerHTML = `<div class="error">${e.message}</div>`;
