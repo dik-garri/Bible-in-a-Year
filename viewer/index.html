@@ -447,6 +447,9 @@
       background: white;
       padding: 8px 100px 8px 0;
       z-index: 10;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .chapter-progress {
       position: absolute;
@@ -1040,6 +1043,24 @@
       '1jo': '1 Иоанна', '2jo': '2 Иоанна', '3jo': '3 Иоанна', 'jd': 'Иуды', 're': 'Откровение'
     };
 
+    const BOOK_SHORT = {
+      'gn': 'Быт.', 'ex': 'Исх.', 'lv': 'Лев.', 'nm': 'Чис.', 'dt': 'Втор.',
+      'js': 'Нав.', 'jud': 'Суд.', 'rt': 'Руфь', '1sm': '1 Цар.', '2sm': '2 Цар.',
+      '1kgs': '3 Цар.', '2kgs': '4 Цар.', '1ch': '1 Пар.', '2ch': '2 Пар.',
+      'ezr': 'Езд.', 'ne': 'Неем.', 'et': 'Есф.', 'job': 'Иов', 'ps': 'Пс.',
+      'prv': 'Прит.', 'ec': 'Еккл.', 'so': 'Песн.', 'is': 'Ис.',
+      'jr': 'Иер.', 'lm': 'Плач', 'ez': 'Иез.', 'dn': 'Дан.',
+      'ho': 'Ос.', 'jl': 'Иоил.', 'am': 'Ам.', 'ob': 'Авд.', 'jn': 'Иона',
+      'mi': 'Мих.', 'na': 'Наум', 'hk': 'Авв.', 'zp': 'Соф.', 'hg': 'Агг.',
+      'zc': 'Зах.', 'ml': 'Мал.', 'mt': 'Мф.', 'mk': 'Мк.', 'lk': 'Лк.',
+      'jo': 'Ин.', 'act': 'Деян.', 'rm': 'Рим.', '1co': '1 Кор.',
+      '2co': '2 Кор.', 'gl': 'Гал.', 'eph': 'Еф.', 'ph': 'Флп.',
+      'cl': 'Кол.', '1ts': '1 Фес.', '2ts': '2 Фес.',
+      '1tm': '1 Тим.', '2tm': '2 Тим.', 'tt': 'Тит', 'phm': 'Флм.',
+      'hb': 'Евр.', 'jm': 'Иак.', '1pe': '1 Пет.', '2pe': '2 Пет.',
+      '1jo': '1 Ин.', '2jo': '2 Ин.', '3jo': '3 Ин.', 'jd': 'Иуд.', 're': 'Откр.'
+    };
+
     let currentTestament = null;
     let currentBook = null;
 
@@ -1228,7 +1249,8 @@
           }
 
           const verses = chapters[chapterIdx];
-          html += `<div class="chapter"><div class="chapter-title" data-book="${bookName}" data-chapter="${ch}" data-base="${bookName} — Глава ${ch}">${bookName} — Глава ${ch}<div class="chapter-progress"></div></div>`;
+          const shortName = BOOK_SHORT[item.abbrev] || bookName;
+          html += `<div class="chapter"><div class="chapter-title" data-book="${bookName}" data-chapter="${ch}" data-base="${shortName} ${ch}">${bookName} — Глава ${ch}<div class="chapter-progress"></div></div>`;
 
           let vStart = 1;
           let vEnd = verses.length;
