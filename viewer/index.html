@@ -225,6 +225,13 @@
       background: white;
       padding: 8px 0;
       z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .chapter-title .current-verse {
+      font-size: 0.85em;
+      color: #999;
     }
     .verse {
       margin-bottom: 8px;
@@ -546,7 +553,7 @@
           }
 
           const verses = chapters[chapterIdx];
-          html += `<div class="chapter"><div class="chapter-title">Глава ${ch}</div>`;
+          html += `<div class="chapter"><div class="chapter-title" data-book="${bookName}" data-chapter="${ch}">${bookName} — Глава ${ch}<span class="current-verse"></span></div>`;
 
           let vStart = 1;
           let vEnd = verses.length;
@@ -564,7 +571,7 @@
 
           for (let v = vStart; v <= vEnd && v <= verses.length; v++) {
             const text = verses[v - 1];
-            html += `<div class="verse"><span class="verse-num">${v}</span>${text}</div>`;
+            html += `<div class="verse" data-book="${bookName}" data-chapter="${ch}" data-verse="${v}"><span class="verse-num">${v}</span>${text}</div>`;
           }
 
           html += '</div>';
@@ -612,6 +619,31 @@
 
     document.getElementById('query').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') showTexts();
+    });
+
+    // Обновляет номер стиха в sticky заголовке главы при скролле
+    window.addEventListener('scroll', () => {
+      const titles = document.querySelectorAll('.chapter-title');
+      titles.forEach(title => {
+        const rect = title.getBoundingClientRect();
+        const verseSpan = title.querySelector('.current-verse');
+        if (rect.top <= 0) {
+          // Заголовок прилип — найти текущий стих в этой главе
+          const chapter = title.parentElement;
+          const verses = chapter.querySelectorAll('.verse');
+          let currentVerse = null;
+          for (const v of verses) {
+            if (v.getBoundingClientRect().top <= 40) {
+              currentVerse = v.dataset.verse;
+            } else {
+              break;
+            }
+          }
+          verseSpan.textContent = currentVerse ? `стих ${currentVerse}` : '';
+        } else {
+          verseSpan.textContent = '';
+        }
+      });
     });
 
     // Загрузка из URL-параметров
