@@ -268,7 +268,35 @@
     .verse {
       margin-bottom: 8px;
       line-height: 1.6;
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 2px 4px;
+      margin-left: -4px;
+      transition: background 0.15s;
     }
+    .verse:hover {
+      background: rgba(92, 124, 250, 0.08);
+    }
+    .verse.copied {
+      background: rgba(92, 124, 250, 0.15);
+    }
+    .copy-toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 200;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .copy-toast.show { opacity: 1; }
+    body.dark .copy-toast { background: #555; }
     .verse-num {
       font-weight: bold;
       color: #888;
@@ -410,6 +438,7 @@
   <div id="content" class="content">
     <p style="color: #888; text-align: center;">Выберите книгу и главу или введите запрос вручную</p>
   </div>
+  <div class="copy-toast" id="copy-toast">Скопировано</div>
 
   <script>
     const bookCache = {};  // { 'synod:gn': [...chapters], 'nrt:gn': [...] }
@@ -761,6 +790,27 @@
 
     document.getElementById('query').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') showTexts();
+    });
+
+    // Копирование стиха по клику
+    let toastTimer;
+    document.getElementById('content').addEventListener('click', (e) => {
+      const verse = e.target.closest('.verse');
+      if (!verse) return;
+      const book = verse.dataset.book;
+      const ch = verse.dataset.chapter;
+      const v = verse.dataset.verse;
+      const text = verse.textContent.replace(/^\d+\s*/, '');
+      const copyText = `${book} ${ch}:${v} — ${text}`;
+      navigator.clipboard.writeText(copyText).then(() => {
+        verse.classList.add('copied');
+        setTimeout(() => verse.classList.remove('copied'), 600);
+        const toast = document.getElementById('copy-toast');
+        toast.textContent = `${book} ${ch}:${v} скопирован`;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 1500);
+      });
     });
 
     // Обновляет номер стиха в sticky заголовке главы при скролле

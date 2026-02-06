@@ -56,6 +56,13 @@ python3 -m http.server 8000
 - Chapters grid for selected book
 - Breadcrumb navigation with back buttons
 
+**Reader features:**
+- Sticky chapter header with book name, chapter and current verse number
+- Chapter progress bar (thin blue line under sticky header)
+- Dynamic page title (shows current query, e.g., "Бытие 1 — Библия")
+- Font size controls (A−/A+, range 12–28px, saved in localStorage key `bible-font-size`)
+- Dark/light theme toggle (saved in localStorage key `bible-dark-theme`)
+
 **Manual query formats:**
 - `Бытие 1` — chapter, all verses
 - `Бытие 1-3` — chapters 1-3, all verses
