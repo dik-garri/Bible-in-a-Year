@@ -62,6 +62,8 @@ python3 -m http.server 8000
 - Dynamic page title (shows current query, e.g., "Бытие 1 — Библия")
 - Font size controls (A−/A+, range 12–28px, saved in localStorage key `bible-font-size`)
 - Dark/light theme toggle (saved in localStorage key `bible-dark-theme`)
+- Verse selection & copy: click verses to select, floating bar with "Копировать" button
+  - Smart references: `5:1-3` (range), `5:1,4` (non-consecutive), `Бытие 1:5; Матфея 1:17` (cross-book)
 
 **Manual query formats:**
 - `Бытие 1` — chapter, all verses
