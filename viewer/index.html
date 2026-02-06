@@ -478,6 +478,27 @@
     body.dark .verse.selected {
       background: rgba(123, 155, 255, 0.2);
     }
+    .verse-compare {
+      background: #f7f7f0;
+      border-left: 3px solid #5c7cfa;
+      padding: 6px 10px;
+      margin: 2px 0 8px 20px;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.9em;
+      line-height: 1.5;
+      color: #555;
+    }
+    .verse-compare-label {
+      font-size: 10px;
+      font-weight: bold;
+      color: #5c7cfa;
+      margin-bottom: 2px;
+    }
+    body.dark .verse-compare {
+      background: #2f2f28;
+      color: #aaa;
+    }
+    body.dark .verse-compare-label { color: #7b9bff; }
     .selection-bar {
       position: fixed;
       bottom: 20px;
@@ -1268,7 +1289,7 @@
 
           for (let v = vStart; v <= vEnd && v <= verses.length; v++) {
             const text = verses[v - 1];
-            html += `<div class="verse" data-book="${bookName}" data-chapter="${ch}" data-verse="${v}"><span class="verse-num">${v}</span>${text}</div>`;
+            html += `<div class="verse" data-book="${bookName}" data-abbrev="${item.abbrev}" data-chapter="${ch}" data-verse="${v}"><span class="verse-num">${v}</span>${text}</div>`;
           }
 
           html += '</div>';
@@ -1352,6 +1373,7 @@
 
     function clearSelection() {
       document.querySelectorAll('.verse.selected').forEach(v => v.classList.remove('selected'));
+      document.querySelectorAll('.verse-compare').forEach(v => v.remove());
       updateSelectionBar();
     }
 
@@ -1415,10 +1437,40 @@
       });
     }
 
-    document.getElementById('content').addEventListener('click', (e) => {
+    document.getElementById('content').addEventListener('click', async (e) => {
       const verse = e.target.closest('.verse');
       if (!verse) return;
-      verse.classList.toggle('selected');
+      const wasSelected = verse.classList.toggle('selected');
+      // Убрать панель сравнения если снято выделение
+      const existing = verse.nextElementSibling;
+      if (existing && existing.classList.contains('verse-compare')) {
+        existing.remove();
+      }
+      // Добавить сравнение если выделен
+      if (wasSelected) {
+        const abbrev = verse.dataset.abbrev;
+        const ch = parseInt(verse.dataset.chapter);
+        const v = parseInt(verse.dataset.verse);
+        const otherTranslation = currentTranslation === 'synod' ? 'nrt' : 'synod';
+        const otherName = otherTranslation === 'synod' ? 'Синодальный' : 'НРП';
+        try {
+          const cacheKey = `${otherTranslation}:${abbrev}`;
+          let chapters = bookCache[cacheKey];
+          if (!chapters) {
+            const dir = otherTranslation === 'synod' ? 'synodal' : 'nrt';
+            const resp = await fetch(`../data/${dir}/${abbrev}.json`);
+            chapters = await resp.json();
+            bookCache[cacheKey] = chapters;
+          }
+          const text = chapters[ch - 1]?.[v - 1];
+          if (text) {
+            const panel = document.createElement('div');
+            panel.className = 'verse-compare';
+            panel.innerHTML = `<div class="verse-compare-label">${otherName}</div>${text}`;
+            verse.insertAdjacentElement('afterend', panel);
+          }
+        } catch (e) { /* тихо игнорируем */ }
+      }
       updateSelectionBar();
     });
 
