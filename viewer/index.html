@@ -64,10 +64,16 @@
     .translation-toggle button:hover:not(.active) {
       background: #eee;
     }
-    .settings-btn {
+    .top-buttons {
       position: fixed;
       top: 12px;
       right: 12px;
+      display: flex;
+      gap: 8px;
+      z-index: 150;
+    }
+    .settings-btn, .search-toggle-btn {
+      position: static;
       width: 40px;
       height: 40px;
       border: none;
@@ -76,11 +82,90 @@
       cursor: pointer;
       font-size: 20px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      z-index: 150;
       transition: transform 0.2s;
     }
     .settings-btn:hover { transform: rotate(30deg); }
-    body.dark .settings-btn { background: #333; color: #d4d4d4; }
+    .search-toggle-btn:hover { background: #f0f0f0; }
+    body.dark .settings-btn, body.dark .search-toggle-btn { background: #333; color: #d4d4d4; }
+    body.dark .search-toggle-btn:hover { background: #444; }
+    .search-bar {
+      position: fixed;
+      top: 60px;
+      right: 12px;
+      background: white;
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      z-index: 150;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      width: 300px;
+    }
+    .search-bar.show { display: flex; }
+    .search-bar input {
+      flex: 1;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 14px;
+      outline: none;
+      min-width: 0;
+    }
+    .search-bar input:focus { border-color: #5c7cfa; }
+    .search-bar .search-info {
+      font-size: 12px;
+      color: #888;
+      white-space: nowrap;
+    }
+    .search-bar button {
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 16px;
+      color: #888;
+      padding: 2px 4px;
+    }
+    .search-bar button:hover { color: #333; }
+    body.dark .search-bar { background: #2a2a2a; }
+    body.dark .search-bar input { background: #333; color: #d4d4d4; border-color: #555; }
+    body.dark .search-bar button:hover { color: #ddd; }
+    .search-result {
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .search-result:hover { background: rgba(92, 124, 250, 0.06); }
+    .search-result:last-child { border-bottom: none; }
+    .search-result-ref {
+      font-size: 13px;
+      font-weight: bold;
+      color: #5c7cfa;
+      margin-bottom: 4px;
+    }
+    .search-result-text {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #555;
+    }
+    .search-result-text mark {
+      background: #fff3a8;
+      color: inherit;
+      padding: 0 1px;
+      border-radius: 2px;
+    }
+    body.dark .search-result { border-bottom-color: #444; }
+    body.dark .search-result-ref { color: #7b9bff; }
+    body.dark .search-result-text { color: #aaa; }
+    body.dark .search-result-text mark { background: #665d20; }
+    .search-results-header {
+      font-size: 14px;
+      color: #888;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    body.dark .search-results-header { border-bottom-color: #444; }
     .settings-panel {
       position: fixed;
       top: 60px;
@@ -341,7 +426,7 @@
       position: sticky;
       top: 0;
       background: white;
-      padding: 8px 50px 8px 0;
+      padding: 8px 100px 8px 0;
       z-index: 10;
     }
     .chapter-progress {
@@ -530,7 +615,15 @@
   </style>
 </head>
 <body>
-  <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+  <div class="top-buttons">
+    <button class="search-toggle-btn" onclick="toggleSearchBar()">🔍</button>
+    <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+  </div>
+  <div class="search-bar" id="search-bar">
+    <input type="text" id="search-input" placeholder="Поиск по Библии...">
+    <span class="search-info" id="search-info"></span>
+    <button onclick="clearSearch()" title="Закрыть">✕</button>
+  </div>
   <div class="settings-panel" id="settings-panel">
     <label>Размер шрифта</label>
     <div class="settings-row">
@@ -626,6 +719,7 @@
     function toggleSettings() {
       document.getElementById('settings-panel').classList.toggle('show');
       document.getElementById('help-popup').classList.remove('show');
+      clearSearch();
     }
     function toggleHelp(e) {
       e.stopPropagation();
@@ -643,6 +737,195 @@
       if (!helpPopup.contains(e.target) && !helpBtn) {
         helpPopup.classList.remove('show');
       }
+      const searchBar = document.getElementById('search-bar');
+      const searchToggle = document.querySelector('.search-toggle-btn');
+      if (!searchBar.contains(e.target) && !searchToggle.contains(e.target)) {
+        if (searchBar.classList.contains('show') && !document.getElementById('search-input').value) {
+          searchBar.classList.remove('show');
+        }
+      }
+    });
+
+    // Поиск по всей Библии
+    let fullBibleCache = {}; // { 'synod': [...], 'nrt': [...] }
+    let searchDebounce;
+
+    function toggleSearchBar() {
+      const bar = document.getElementById('search-bar');
+      const input = document.getElementById('search-input');
+      document.getElementById('settings-panel').classList.remove('show');
+      if (bar.classList.toggle('show')) {
+        input.focus();
+      } else {
+        clearSearch();
+      }
+    }
+
+    async function loadFullBible() {
+      if (fullBibleCache[currentTranslation]) return fullBibleCache[currentTranslation];
+      const file = currentTranslation === 'synod' ? '../data/synodal.json' : '../data/nrt.json';
+      const resp = await fetch(file);
+      const data = await resp.json();
+      fullBibleCache[currentTranslation] = data;
+      return data;
+    }
+
+    // Убирает знаки препинания для сравнения
+    function stripPunct(s) {
+      return s.replace(/[^\p{L}\p{N}\s]/gu, '').toLowerCase();
+    }
+
+    async function performSearch() {
+      const term = document.getElementById('search-input').value.trim();
+      const info = document.getElementById('search-info');
+      const content = document.getElementById('content');
+
+      if (!term || term.length < 2) {
+        info.textContent = '';
+        return;
+      }
+
+      info.textContent = '...';
+      let bible;
+      try {
+        bible = await loadFullBible();
+      } catch (e) {
+        info.textContent = '';
+        content.innerHTML = '<div class="error">Не удалось загрузить данные</div>';
+        return;
+      }
+
+      // Разбиваем запрос на слова
+      const words = stripPunct(term).split(/\s+/).filter(w => w.length > 0);
+      if (!words.length) { info.textContent = ''; return; }
+
+      // 1) Фраза целиком (слова подряд, игнорируя пунктуацию и регистр)
+      const phraseEsc = words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+');
+      const phraseRe = new RegExp(phraseEsc, 'iu');
+
+      // 2) Каждое слово как отдельное слово (границы)
+      const wordExactRes = words.map(w => {
+        const esc = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`(?<=^|\\s|[^\\p{L}\\p{N}])${esc}(?=$|\\s|[^\\p{L}\\p{N}])`, 'giu');
+      });
+
+      // 3) Каждое слово как часть слова
+      const wordPartialRes = words.map(w => {
+        return new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'giu');
+      });
+
+      const phrase = [];   // точная фраза подряд
+      const allWords = []; // все слова как отдельные, но не подряд
+      const partial = [];  // все слова как части слов
+      const MAX = 100;
+
+      for (const book of bible) {
+        const name = BOOK_NAMES[book.abbrev] || book.abbrev;
+        for (let ch = 0; ch < book.chapters.length; ch++) {
+          for (let v = 0; v < book.chapters[ch].length; v++) {
+            const text = book.chapters[ch][v];
+            const clean = stripPunct(text);
+            const total = phrase.length + allWords.length + partial.length;
+            if (total >= MAX) break;
+
+            // Проверка фразы
+            if (phraseRe.test(clean)) {
+              phrase.push({ name, abbrev: book.abbrev, ch: ch + 1, v: v + 1, text });
+              continue;
+            }
+
+            // Проверка всех слов как отдельных
+            let allExact = true;
+            for (const re of wordExactRes) {
+              re.lastIndex = 0;
+              if (!re.test(clean)) { allExact = false; break; }
+            }
+            if (allExact) {
+              allWords.push({ name, abbrev: book.abbrev, ch: ch + 1, v: v + 1, text });
+              continue;
+            }
+
+            // Проверка всех слов как частей
+            let allPartial = true;
+            for (const re of wordPartialRes) {
+              re.lastIndex = 0;
+              if (!re.test(clean)) { allPartial = false; break; }
+            }
+            if (allPartial) {
+              partial.push({ name, abbrev: book.abbrev, ch: ch + 1, v: v + 1, text });
+            }
+          }
+          if (phrase.length + allWords.length + partial.length >= MAX) break;
+        }
+        if (phrase.length + allWords.length + partial.length >= MAX) break;
+      }
+
+      const total = phrase.length + allWords.length + partial.length;
+      info.textContent = total >= MAX ? `${MAX}+` : total;
+
+      if (total === 0) {
+        content.innerHTML = '<p style="color:#888;text-align:center;">Ничего не найдено</p>';
+        return;
+      }
+
+      // Подсветка каждого слова
+      const highlightParts = words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      const highlightRe = new RegExp(`(${highlightParts.join('|')})`, 'gi');
+
+      let html = `<div class="search-results-header">Найдено: ${total >= MAX ? 'более ' + MAX : total}</div>`;
+
+      function renderResults(list) {
+        let h = '';
+        for (const r of list) {
+          const highlighted = r.text.replace(highlightRe, '<mark>$1</mark>');
+          h += `<div class="search-result" onclick="goToSearchResult('${r.name}', ${r.ch}, ${r.v})">`;
+          h += `<div class="search-result-ref">${r.name} ${r.ch}:${r.v}</div>`;
+          h += `<div class="search-result-text"><span class="verse-num">${r.v}</span> ${highlighted}</div>`;
+          h += `</div>`;
+        }
+        return h;
+      }
+
+      const hasMultiple = [phrase, allWords, partial].filter(a => a.length > 0).length > 1;
+      if (phrase.length > 0) {
+        if (hasMultiple) html += `<div class="search-results-header" style="margin-top:12px;">Точная фраза: ${phrase.length}</div>`;
+        html += renderResults(phrase);
+      }
+      if (allWords.length > 0) {
+        if (hasMultiple) html += `<div class="search-results-header" style="margin-top:12px;">Все слова: ${allWords.length}</div>`;
+        html += renderResults(allWords);
+      }
+      if (partial.length > 0) {
+        if (hasMultiple) html += `<div class="search-results-header" style="margin-top:12px;">Частичные: ${partial.length}</div>`;
+        html += renderResults(partial);
+      }
+      content.innerHTML = html;
+      window.scrollTo(0, 0);
+    }
+
+    async function goToSearchResult(bookName, chapter, verse) {
+      clearSearch();
+      document.getElementById('query').value = `${bookName} ${chapter}`;
+      await showTexts();
+      if (verse) {
+        const el = document.querySelector(`.verse[data-book="${bookName}"][data-chapter="${chapter}"][data-verse="${verse}"]`);
+        if (el) {
+          el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          el.classList.add('selected');
+          setTimeout(() => el.classList.remove('selected'), 1500);
+        }
+      }
+    }
+
+    function clearSearch() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('search-info').textContent = '';
+      document.getElementById('search-bar').classList.remove('show');
+    }
+
+    document.getElementById('search-input').addEventListener('input', () => {
+      clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(performSearch, 500);
     });
 
     // Шрифт
@@ -1144,6 +1427,26 @@
 
     // Клавиатурная навигация: ← → для пред/след главы
     document.addEventListener('keydown', (e) => {
+      // Ctrl+F / Cmd+F — открыть поиск по Библии
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        const bar = document.getElementById('search-bar');
+        if (!bar.classList.contains('show')) toggleSearchBar();
+        else document.getElementById('search-input').focus();
+        return;
+      }
+      // Enter в поле поиска — выполнить поиск
+      if (e.key === 'Enter' && e.target.id === 'search-input') {
+        e.preventDefault();
+        clearTimeout(searchDebounce);
+        performSearch();
+        return;
+      }
+      // Escape — закрыть поиск
+      if (e.key === 'Escape' && document.getElementById('search-bar').classList.contains('show')) {
+        clearSearch();
+        return;
+      }
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       const query = document.getElementById('query').value.trim();
