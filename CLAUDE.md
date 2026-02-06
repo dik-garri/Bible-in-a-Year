@@ -57,13 +57,16 @@ python3 -m http.server 8000
 - Breadcrumb navigation with back buttons
 
 **Reader features:**
-- Sticky chapter header with book name, chapter and current verse number
+- Sticky chapter header: "Бытие — Глава 1:14" (updates verse on scroll)
 - Chapter progress bar (thin blue line under sticky header)
 - Dynamic page title (shows current query, e.g., "Бытие 1 — Библия")
-- Font size controls (A−/A+, range 12–28px, saved in localStorage key `bible-font-size`)
-- Dark/light theme toggle (saved in localStorage key `bible-dark-theme`)
+- Settings gear (⚙️) in top-right corner with panel:
+  - Font size (A−/A+, range 12–28px, localStorage key `bible-font-size`)
+  - Font family: serif/sans-serif/mono (localStorage key `bible-font-family`)
+  - Dark/light theme (localStorage key `bible-dark-theme`)
 - Verse selection & copy: click verses to select, floating bar with "Копировать" button
   - Smart references: `5:1-3` (range), `5:1,4` (non-consecutive), `Бытие 1:5; Матфея 1:17` (cross-book)
+  - Copy includes translation name, e.g., `Бытие 1:2 (Синодальный)`
 
 **Manual query formats:**
 - `Бытие 1` — chapter, all verses

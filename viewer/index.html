@@ -301,13 +301,6 @@
       background: white;
       padding: 8px 50px 8px 0;
       z-index: 10;
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-    }
-    .chapter-title .current-verse {
-      font-size: 0.85em;
-      color: #999;
     }
     .chapter-progress {
       position: absolute;
@@ -839,7 +832,7 @@
           }
 
           const verses = chapters[chapterIdx];
-          html += `<div class="chapter"><div class="chapter-title" data-book="${bookName}" data-chapter="${ch}">${bookName} — Глава ${ch}<span class="current-verse"></span><div class="chapter-progress"></div></div>`;
+          html += `<div class="chapter"><div class="chapter-title" data-book="${bookName}" data-chapter="${ch}" data-base="${bookName} — Глава ${ch}">${bookName} — Глава ${ch}<div class="chapter-progress"></div></div>`;
 
           let vStart = 1;
           let vEnd = verses.length;
@@ -997,10 +990,9 @@
       const titles = document.querySelectorAll('.chapter-title');
       titles.forEach(title => {
         const rect = title.getBoundingClientRect();
-        const verseSpan = title.querySelector('.current-verse');
         const progressBar = title.querySelector('.chapter-progress');
+        const base = title.dataset.base;
         if (rect.top <= 0) {
-          // Заголовок прилип — найти текущий стих в этой главе
           const chapter = title.parentElement;
           const verses = chapter.querySelectorAll('.verse');
           let currentVerse = null;
@@ -1013,11 +1005,11 @@
               break;
             }
           }
-          verseSpan.textContent = currentVerse ? `стих ${currentVerse}` : '';
+          title.firstChild.textContent = currentVerse ? `${base}:${currentVerse}` : base;
           const progress = verses.length > 0 ? (visibleCount / verses.length) * 100 : 0;
           progressBar.style.width = progress + '%';
         } else {
-          verseSpan.textContent = '';
+          title.firstChild.textContent = base;
           progressBar.style.width = '0';
         }
       });
