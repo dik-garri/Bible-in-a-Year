@@ -63,7 +63,7 @@ python3 -m http.server 8000
 - Dark/light theme (localStorage key `bible-dark-theme`)
 
 **Reader features:**
-- Sticky chapter header: "Бытие — Глава 1:14" (updates verse on scroll)
+- Sticky chapter header with short book names: "Быт. 1:14" on scroll, full name "Бытие — Глава 1" when static (BOOK_SHORT map)
 - Chapter progress bar (thin blue line under sticky header)
 - Dynamic page title (shows current query, e.g., "Бытие 1 — Библия")
 - Verse selection & copy: click verses to select, floating bar with "Копировать" button
