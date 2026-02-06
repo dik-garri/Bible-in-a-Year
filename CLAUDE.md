@@ -53,7 +53,7 @@ python3 -m http.server 8000
 **Single-panel UI:**
 - Testament selection (Ветхий Завет / Новый Завет)
 - Books grid (39 OT + 27 NT books), chapters grid, breadcrumb navigation
-- Manual query input with examples, "Показать тексты" button
+- Manual query input with "?" help button (popup with format examples), "Показать тексты" button
 - Auto-loads on input (debounced 400ms) and on translation change
 
 **Settings gear (⚙️) in top-right corner:**
