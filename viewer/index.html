@@ -381,6 +381,39 @@
       border-radius: 4px;
     }
 
+    .chapter-nav {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #ddd;
+    }
+    .chapter-nav button {
+      flex: 1;
+      padding: 12px;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chapter-nav button:hover {
+      background: #5c7cfa;
+      color: white;
+      border-color: #5c7cfa;
+    }
+    body.dark .chapter-nav { border-top-color: #444; }
+    body.dark .chapter-nav button {
+      background: #333;
+      color: #d4d4d4;
+      border-color: #444;
+    }
+    body.dark .chapter-nav button:hover {
+      background: #7b9bff;
+      color: #1a1a1a;
+    }
+
     /* Dark theme */
     body.dark {
       background: #1a1a1a;
@@ -859,7 +892,49 @@
         html += '</div>';
       }
 
+      // Навигация пред/след глава
+      if (parsed.length === 1 && parsed[0].verseStart === null) {
+        const item = parsed[0];
+        const allBooks = [...OT_BOOKS, ...NT_BOOKS];
+        const bookIdx = allBooks.findIndex(b => b[1] === item.abbrev);
+        const book = allBooks[bookIdx];
+
+        let prevLabel = null, prevQuery = null;
+        let nextLabel = null, nextQuery = null;
+
+        if (item.chapterStart > 1) {
+          prevLabel = `← ${book[0]} ${item.chapterStart - 1}`;
+          prevQuery = `${book[0]} ${item.chapterStart - 1}`;
+        } else if (bookIdx > 0) {
+          const pb = allBooks[bookIdx - 1];
+          prevLabel = `← ${pb[0]} ${pb[2]}`;
+          prevQuery = `${pb[0]} ${pb[2]}`;
+        }
+
+        if (item.chapterEnd < book[2]) {
+          nextLabel = `${book[0]} ${item.chapterEnd + 1} →`;
+          nextQuery = `${book[0]} ${item.chapterEnd + 1}`;
+        } else if (bookIdx < allBooks.length - 1) {
+          const nb = allBooks[bookIdx + 1];
+          nextLabel = `${nb[0]} 1 →`;
+          nextQuery = `${nb[0]} 1`;
+        }
+
+        if (prevLabel || nextLabel) {
+          html += '<div class="chapter-nav">';
+          if (prevLabel) html += `<button onclick="navigateTo('${prevQuery}')">${prevLabel}</button>`;
+          if (nextLabel) html += `<button onclick="navigateTo('${nextQuery}')">${nextLabel}</button>`;
+          html += '</div>';
+        }
+      }
+
       return html;
+    }
+
+    function navigateTo(query) {
+      document.getElementById('query').value = query;
+      showTexts();
+      window.scrollTo(0, 0);
     }
 
     async function showTexts() {
@@ -891,6 +966,8 @@
 
         document.title = query + ' — Библия';
         content.innerHTML = renderTexts(parsed, loadedBooks);
+        localStorage.setItem('bible-last-query', query);
+        localStorage.setItem('bible-last-translation', currentTranslation);
       } catch (e) {
         content.innerHTML = `<div class="error">${e.message}</div>`;
       }
@@ -1015,7 +1092,7 @@
       });
     });
 
-    // Загрузка из URL-параметров
+    // Загрузка из URL-параметров или последнего чтения
     (function() {
       const params = new URLSearchParams(window.location.search);
       const query = params.get('q');
@@ -1028,6 +1105,14 @@
       if (query) {
         document.getElementById('query').value = query;
         showTexts();
+      } else {
+        const lastQuery = localStorage.getItem('bible-last-query');
+        const lastTranslation = localStorage.getItem('bible-last-translation');
+        if (lastQuery) {
+          if (lastTranslation) setTranslation(lastTranslation);
+          document.getElementById('query').value = lastQuery;
+          showTexts();
+        }
       }
     })();
   </script>
