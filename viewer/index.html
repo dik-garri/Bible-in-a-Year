@@ -1042,7 +1042,22 @@
       '1петра': '1pe', '2петра': '2pe',
       '1 иоанна': '1jo', '2 иоанна': '2jo', '3 иоанна': '3jo',
       '1иоанна': '1jo', '2иоанна': '2jo', '3иоанна': '3jo',
-      'иуды': 'jd', 'откровение': 're', 'апокалипсис': 're'
+      'иуды': 'jd', 'откровение': 're', 'апокалипсис': 're',
+      // Латинские аббревиатуры
+      'gn': 'gn', 'ex': 'ex', 'lv': 'lv', 'nm': 'nm', 'dt': 'dt',
+      'js': 'js', 'jud': 'jud', 'rt': 'rt', '1sm': '1sm', '2sm': '2sm',
+      '1kgs': '1kgs', '2kgs': '2kgs', '1ch': '1ch', '2ch': '2ch',
+      'ezr': 'ezr', 'ne': 'ne', 'et': 'et', 'job': 'job', 'ps': 'ps',
+      'prv': 'prv', 'ec': 'ec', 'so': 'so', 'is': 'is', 'jr': 'jr',
+      'lm': 'lm', 'ez': 'ez', 'dn': 'dn', 'ho': 'ho', 'jl': 'jl',
+      'am': 'am', 'ob': 'ob', 'jn': 'jn', 'mi': 'mi', 'na': 'na',
+      'hk': 'hk', 'zp': 'zp', 'hg': 'hg', 'zc': 'zc', 'ml': 'ml',
+      'mt': 'mt', 'mk': 'mk', 'lk': 'lk', 'jo': 'jo', 'act': 'act',
+      'rm': 'rm', '1co': '1co', '2co': '2co', 'gl': 'gl', 'eph': 'eph',
+      'ph': 'ph', 'cl': 'cl', '1ts': '1ts', '2ts': '2ts', '1tm': '1tm',
+      '2tm': '2tm', 'tt': 'tt', 'phm': 'phm', 'hb': 'hb', 'jm': 'jm',
+      '1pe': '1pe', '2pe': '2pe', '1jo': '1jo', '2jo': '2jo', '3jo': '3jo',
+      'jd': 'jd', 're': 're'
     };
 
     // Русские названия для отображения
@@ -1587,6 +1602,19 @@
       }, { passive: true });
     })();
 
+    // Конвертирует латинские аббревиатуры в русские названия: "gn 1-3;mt 1" → "Бытие 1-3; Матфея 1"
+    function queryToCyrillic(query) {
+      return query.split(';').map(part => {
+        part = part.trim();
+        const match = part.match(/^([a-z0-9]+)\s+(.*)$/i);
+        if (!match) return part;
+        const abbrev = match[1].toLowerCase();
+        const rest = match[2];
+        const name = BOOK_NAMES[abbrev];
+        return name ? `${name} ${rest}` : part;
+      }).join('; ');
+    }
+
     // Загрузка из URL-параметров или последнего чтения
     (function() {
       const params = new URLSearchParams(window.location.search);
@@ -1598,7 +1626,7 @@
       }
 
       if (query) {
-        document.getElementById('query').value = query;
+        document.getElementById('query').value = queryToCyrillic(query);
         showTexts();
       } else {
         const lastQuery = localStorage.getItem('bible-last-query');

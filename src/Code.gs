@@ -11,13 +11,65 @@ const CHAT_IDS = [
 // URL вашего просмотрщика на GitHub Pages
 const VIEWER_URL = 'https://dik-garri.github.io/Bible-in-a-Year/viewer/';
 
+// Маппинг русских названий книг на латинские аббревиатуры
+const BOOK_ABBREV = {
+  'Бытие': 'gn', 'Исход': 'ex', 'Левит': 'lv', 'Числа': 'nm', 'Второзаконие': 'dt',
+  'Иисус Навин': 'js', 'Навин': 'js', 'Судьи': 'jud', 'Руфь': 'rt',
+  '1 Царств': '1sm', '2 Царств': '2sm', '3 Царств': '1kgs', '4 Царств': '2kgs',
+  '1 Паралипоменон': '1ch', '2 Паралипоменон': '2ch',
+  'Ездра': 'ezr', 'Неемия': 'ne', 'Есфирь': 'et', 'Иов': 'job',
+  'Псалтирь': 'ps', 'Псалом': 'ps', 'Притчи': 'prv',
+  'Екклесиаст': 'ec', 'Песня Песней': 'so', 'Песнь Песней': 'so',
+  'Исаия': 'is', 'Иеремия': 'jr', 'Плач Иеремии': 'lm',
+  'Иезекииль': 'ez', 'Даниил': 'dn',
+  'Осия': 'ho', 'Иоиль': 'jl', 'Амос': 'am', 'Авдий': 'ob',
+  'Иона': 'jn', 'Михей': 'mi', 'Наум': 'na', 'Аввакум': 'hk',
+  'Софония': 'zp', 'Аггей': 'hg', 'Захария': 'zc', 'Малахия': 'ml',
+  'Матфея': 'mt', 'От Матфея': 'mt', 'Марка': 'mk', 'От Марка': 'mk',
+  'Луки': 'lk', 'От Луки': 'lk', 'Иоанна': 'jo', 'От Иоанна': 'jo',
+  'Деяния': 'act', 'Римлянам': 'rm',
+  '1 Коринфянам': '1co', '2 Коринфянам': '2co',
+  'Галатам': 'gl', 'Ефесянам': 'eph', 'Филиппийцам': 'ph', 'Колоссянам': 'cl',
+  '1 Фессалоникийцам': '1ts', '2 Фессалоникийцам': '2ts',
+  '1 Тимофею': '1tm', '2 Тимофею': '2tm',
+  'Титу': 'tt', 'Филимону': 'phm', 'Евреям': 'hb', 'Иакова': 'jm',
+  '1 Петра': '1pe', '2 Петра': '2pe',
+  '1 Иоанна': '1jo', '2 Иоанна': '2jo', '3 Иоанна': '3jo',
+  'Иуды': 'jd', 'Откровение': 're'
+};
+
+/**
+ * Конвертирует запрос из русского в латинские аббревиатуры
+ * "Бытие 1-3; Матфея 1" → "gn 1-3;mt 1"
+ */
+function queryToLatin(query) {
+  return query.split(';').map(function(part) {
+    part = part.trim();
+    var match = part.match(/^(.+?)\s+(\d.*)$/);
+    if (!match) return part;
+    var bookName = match[1];
+    var rest = match[2];
+    var abbrev = BOOK_ABBREV[bookName];
+    if (!abbrev) {
+      // Попробовать без учёта регистра
+      for (var key in BOOK_ABBREV) {
+        if (key.toLowerCase() === bookName.toLowerCase()) {
+          abbrev = BOOK_ABBREV[key];
+          break;
+        }
+      }
+    }
+    return (abbrev || bookName) + ' ' + rest;
+  }).join(';');
+}
+
 /**
  * Генерирует URL для просмотрщика
  * @param {string} query - запрос (Бытие 1-3)
  * @param {string} translation - synod или nrt
  */
 function getViewerUrl(query, translation) {
-  return VIEWER_URL + '?q=' + encodeURIComponent(query) + '&t=' + translation;
+  return VIEWER_URL + '?q=' + encodeURIComponent(queryToLatin(query)) + '&t=' + translation;
 }
 
 /**
