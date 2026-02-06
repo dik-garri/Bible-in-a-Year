@@ -94,42 +94,61 @@
       right: 12px;
       background: white;
       border-radius: 10px;
-      padding: 10px 12px;
+      padding: 8px 10px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.18);
       z-index: 150;
       display: none;
       align-items: center;
-      gap: 8px;
-      width: 300px;
+      gap: 6px;
+      width: 280px;
     }
     .search-bar.show { display: flex; }
     .search-bar input {
       flex: 1;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 6px 8px;
+      border: none;
+      background: transparent;
+      padding: 0;
+      margin: 0;
       font-size: 14px;
       outline: none;
       min-width: 0;
     }
-    .search-bar input:focus { border-color: #5c7cfa; }
     .search-bar .search-info {
-      font-size: 12px;
-      color: #888;
+      font-size: 11px;
+      color: #999;
       white-space: nowrap;
     }
-    .search-bar button {
+    .search-bar .search-close {
       border: none;
       background: none;
       cursor: pointer;
-      font-size: 16px;
-      color: #888;
-      padding: 2px 4px;
+      font-size: 14px;
+      color: #999;
+      padding: 0;
+      line-height: 1;
     }
-    .search-bar button:hover { color: #333; }
+    .search-bar .search-close:hover { color: #333; }
     body.dark .search-bar { background: #2a2a2a; }
-    body.dark .search-bar input { background: #333; color: #d4d4d4; border-color: #555; }
-    body.dark .search-bar button:hover { color: #ddd; }
+    body.dark .search-bar input { color: #d4d4d4; }
+    body.dark .search-bar .search-close:hover { color: #ddd; }
+    .search-translation-btn {
+      border: none;
+      cursor: pointer;
+      background: none;
+      color: #5c7cfa;
+      padding: 0;
+      margin: 0;
+      font-size: 12px;
+      font-weight: bold;
+      white-space: nowrap;
+      line-height: normal;
+      border-right: 1px solid #ddd;
+      padding-right: 6px;
+      border-radius: 0;
+    }
+    .search-translation-btn:hover { color: #4263eb; }
+    body.dark .search-translation-btn { color: #7b9bff; border-right-color: #444; }
+    body.dark .search-translation-btn:hover { color: #99b3ff; }
     .search-result {
       padding: 10px 0;
       border-bottom: 1px solid #eee;
@@ -620,9 +639,10 @@
     <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
   </div>
   <div class="search-bar" id="search-bar">
-    <input type="text" id="search-input" placeholder="Поиск по Библии...">
+    <button class="search-translation-btn" id="search-trans-btn" onclick="toggleSearchTranslation()">СИН</button>
+    <input type="text" id="search-input" placeholder="Поиск...">
     <span class="search-info" id="search-info"></span>
-    <button onclick="clearSearch()" title="Закрыть">✕</button>
+    <button class="search-close" onclick="clearSearch()" title="Закрыть">✕</button>
   </div>
   <div class="settings-panel" id="settings-panel">
     <label>Размер шрифта</label>
@@ -1083,10 +1103,20 @@
       showTexts();
     }
 
+    function updateSearchPlaceholder() {
+      document.getElementById('search-trans-btn').textContent = currentTranslation === 'synod' ? 'СИН' : 'НРП';
+    }
+
+    function toggleSearchTranslation() {
+      setTranslation(currentTranslation === 'synod' ? 'nrt' : 'synod', true);
+      if (document.getElementById('search-input').value.trim()) performSearch();
+    }
+
     function setTranslation(t, skipLoad) {
       currentTranslation = t;
       document.getElementById('btn-synod').classList.toggle('active', t === 'synod');
       document.getElementById('btn-nrt').classList.toggle('active', t === 'nrt');
+      updateSearchPlaceholder();
       if (!skipLoad && document.getElementById('query').value.trim()) showTexts();
     }
 
