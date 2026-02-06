@@ -64,37 +64,81 @@
     .translation-toggle button:hover:not(.active) {
       background: #eee;
     }
-    .font-size-controls {
+    .settings-btn {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: white;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      z-index: 150;
+      transition: transform 0.2s;
+    }
+    .settings-btn:hover { transform: rotate(30deg); }
+    body.dark .settings-btn { background: #333; color: #d4d4d4; }
+    .settings-panel {
+      position: fixed;
+      top: 60px;
+      right: 12px;
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      z-index: 150;
+      display: none;
+      width: 220px;
+    }
+    .settings-panel.show { display: block; }
+    body.dark .settings-panel { background: #2a2a2a; color: #d4d4d4; }
+    .settings-panel label {
+      display: block;
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 6px;
+      font-weight: normal;
+    }
+    .settings-row {
       display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
+      gap: 6px;
+      margin-bottom: 14px;
       align-items: center;
     }
-    .font-size-controls button {
-      width: 36px;
-      height: 36px;
-      border: 1px solid #ccc;
+    .settings-row button {
+      flex: 1;
+      padding: 8px 4px;
+      border: 1px solid #ddd;
       background: white;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 16px;
-      line-height: 1;
+      font-size: 14px;
+      transition: all 0.15s;
     }
-    .font-size-controls button:hover {
-      background: #eee;
-    }
-    .font-size-controls span {
-      font-size: 13px;
-      color: #888;
-    }
-    .font-size-controls button.active {
+    .settings-row button:hover { background: #f0f0f0; }
+    .settings-row button.active {
       background: #4a4a4a;
       color: white;
       border-color: #4a4a4a;
     }
-    body.dark .font-size-controls button.active {
+    body.dark .settings-row button {
+      background: #333;
+      color: #d4d4d4;
+      border-color: #555;
+    }
+    body.dark .settings-row button:hover { background: #444; }
+    body.dark .settings-row button.active {
       background: #666;
       color: white;
+    }
+    .settings-row .size-label {
+      font-size: 13px;
+      color: #888;
+      min-width: 24px;
+      text-align: center;
     }
     button.show-btn {
       width: 100%;
@@ -423,6 +467,26 @@
   </style>
 </head>
 <body>
+  <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+  <div class="settings-panel" id="settings-panel">
+    <label>Размер шрифта</label>
+    <div class="settings-row">
+      <button onclick="changeFontSize(-1)">A−</button>
+      <span class="size-label" id="font-size-label">17</span>
+      <button onclick="changeFontSize(1)">A+</button>
+    </div>
+    <label>Шрифт</label>
+    <div class="settings-row">
+      <button onclick="setFont('serif')" id="font-serif" style="font-family: Georgia, serif">Аа</button>
+      <button onclick="setFont('sans')" id="font-sans" style="font-family: Arial, sans-serif">Аа</button>
+      <button onclick="setFont('mono')" id="font-mono" style="font-family: 'Courier New', monospace">Аа</button>
+    </div>
+    <label>Тема</label>
+    <div class="settings-row">
+      <button id="theme-light" onclick="setTheme(false)">☀️ День</button>
+      <button id="theme-dark" onclick="setTheme(true)">🌙 Ночь</button>
+    </div>
+  </div>
   <h1>📖 Библия</h1>
 
   <!-- Book Picker -->
@@ -447,18 +511,6 @@
     <div class="translation-toggle">
       <button id="btn-synod" class="active" onclick="setTranslation('synod')">Синодальный</button>
       <button id="btn-nrt" onclick="setTranslation('nrt')">НРП</button>
-    </div>
-
-    <div class="font-size-controls">
-      <button onclick="changeFontSize(-1)">A−</button>
-      <span id="font-size-label">17</span>
-      <button onclick="changeFontSize(1)">A+</button>
-      <span style="border-left: 1px solid #ccc; height: 24px; margin: 0 4px"></span>
-      <button onclick="setFont('serif')" id="font-serif" style="font-family: Georgia, serif" title="С засечками">Аа</button>
-      <button onclick="setFont('sans')" id="font-sans" style="font-family: Arial, sans-serif" title="Без засечек">Аа</button>
-      <button onclick="setFont('mono')" id="font-mono" style="font-family: 'Courier New', monospace" title="Моноширинный">Аа</button>
-      <span style="flex:1"></span>
-      <button id="theme-btn" onclick="toggleTheme()">🌙</button>
     </div>
 
     <button class="show-btn" onclick="showTexts()">Показать тексты</button>
@@ -497,14 +549,26 @@
     // Тема
     function applyTheme(dark) {
       document.body.classList.toggle('dark', dark);
-      document.getElementById('theme-btn').textContent = dark ? '☀️' : '🌙';
+      document.getElementById('theme-light').classList.toggle('active', !dark);
+      document.getElementById('theme-dark').classList.toggle('active', dark);
     }
-    function toggleTheme() {
-      const dark = !document.body.classList.contains('dark');
+    function setTheme(dark) {
       localStorage.setItem('bible-dark-theme', dark);
       applyTheme(dark);
     }
     applyTheme(localStorage.getItem('bible-dark-theme') === 'true');
+
+    // Панель настроек
+    function toggleSettings() {
+      document.getElementById('settings-panel').classList.toggle('show');
+    }
+    document.addEventListener('click', (e) => {
+      const panel = document.getElementById('settings-panel');
+      const btn = document.querySelector('.settings-btn');
+      if (!panel.contains(e.target) && !btn.contains(e.target)) {
+        panel.classList.remove('show');
+      }
+    });
 
     // Шрифт
     const FONTS = {
