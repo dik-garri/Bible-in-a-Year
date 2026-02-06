@@ -64,6 +64,29 @@
     .translation-toggle button:hover:not(.active) {
       background: #eee;
     }
+    .font-size-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    .font-size-controls button {
+      width: 36px;
+      height: 36px;
+      border: 1px solid #ccc;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .font-size-controls button:hover {
+      background: #eee;
+    }
+    .font-size-controls span {
+      font-size: 13px;
+      color: #888;
+    }
     button.show-btn {
       width: 100%;
       padding: 8px;
@@ -263,6 +286,83 @@
       background: #ffe3e3;
       border-radius: 4px;
     }
+
+    /* Dark theme */
+    body.dark {
+      background: #1a1a1a;
+      color: #d4d4d4;
+    }
+    body.dark h1 { color: #bbb; }
+    body.dark .input-section,
+    body.dark .picker-section,
+    body.dark .content {
+      background: #2a2a2a;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    body.dark input[type="text"] {
+      background: #333;
+      color: #d4d4d4;
+      border-color: #555;
+    }
+    body.dark .translation-toggle button {
+      background: #333;
+      color: #d4d4d4;
+      border-color: #555;
+    }
+    body.dark .translation-toggle button.active {
+      background: #555;
+      color: white;
+    }
+    body.dark .font-size-controls button {
+      background: #333;
+      color: #d4d4d4;
+      border-color: #555;
+    }
+    body.dark .testament-buttons button {
+      background: #2a2a2a;
+      color: #7b9bff;
+      border-color: #7b9bff;
+    }
+    body.dark .testament-buttons button:hover,
+    body.dark .testament-buttons button.active {
+      background: #7b9bff;
+      color: #1a1a1a;
+    }
+    body.dark .books-grid button,
+    body.dark .chapters-grid button {
+      background: #333;
+      color: #d4d4d4;
+      border-color: #444;
+    }
+    body.dark .books-grid button:hover,
+    body.dark .chapters-grid button:hover {
+      background: #7b9bff;
+      color: #1a1a1a;
+    }
+    body.dark .back-btn {
+      background: #333;
+      color: #d4d4d4;
+      border-color: #555;
+    }
+    body.dark .book-title {
+      color: #ccc;
+      border-bottom-color: #444;
+    }
+    body.dark .chapter-title {
+      color: #aaa;
+      background: #2a2a2a;
+    }
+    body.dark .verse-num { color: #666; }
+    body.dark .picker-header h3 { color: #bbb; }
+    body.dark .error {
+      color: #ff8888;
+      background: #3a2020;
+    }
+    body.dark .examples { color: #888; }
+    body.dark .examples code {
+      background: #333;
+      color: #ccc;
+    }
   </style>
 </head>
 <body>
@@ -292,6 +392,14 @@
       <button id="btn-nrt" onclick="setTranslation('nrt')">НРП</button>
     </div>
 
+    <div class="font-size-controls">
+      <button onclick="changeFontSize(-1)">A−</button>
+      <span id="font-size-label">17</span>
+      <button onclick="changeFontSize(1)">A+</button>
+      <span style="flex:1"></span>
+      <button id="theme-btn" onclick="toggleTheme()">🌙</button>
+    </div>
+
     <button class="show-btn" onclick="showTexts()">Показать тексты</button>
 
     <div class="examples">
@@ -306,6 +414,31 @@
   <script>
     const bookCache = {};  // { 'synod:gn': [...chapters], 'nrt:gn': [...] }
     let currentTranslation = 'synod';
+
+    // Размер шрифта
+    let contentFontSize = parseInt(localStorage.getItem('bible-font-size')) || 17;
+    function applyFontSize() {
+      document.getElementById('content').style.fontSize = contentFontSize + 'px';
+      document.getElementById('font-size-label').textContent = contentFontSize;
+    }
+    function changeFontSize(delta) {
+      contentFontSize = Math.max(12, Math.min(28, contentFontSize + delta));
+      localStorage.setItem('bible-font-size', contentFontSize);
+      applyFontSize();
+    }
+    applyFontSize();
+
+    // Тема
+    function applyTheme(dark) {
+      document.body.classList.toggle('dark', dark);
+      document.getElementById('theme-btn').textContent = dark ? '☀️' : '🌙';
+    }
+    function toggleTheme() {
+      const dark = !document.body.classList.contains('dark');
+      localStorage.setItem('bible-dark-theme', dark);
+      applyTheme(dark);
+    }
+    applyTheme(localStorage.getItem('bible-dark-theme') === 'true');
 
     // Книги Ветхого Завета: [название, аббревиатура, кол-во глав]
     const OT_BOOKS = [
