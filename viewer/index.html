@@ -879,14 +879,16 @@
         curGroup.verses.push(v);
       }
 
-      const refParts = bookGroups.map(g => `${g.book} ${buildBookRef(g.verses)}`);
-      const ref = refParts.join('; ');
-
-      const lines = selected.map(v => {
-        const text = v.textContent.replace(/^\d+\s*/, '');
-        return `${v.dataset.verse} ${text}`;
+      const translationName = currentTranslation === 'synod' ? 'Синодальный' : 'НРП';
+      const blocks = bookGroups.map(g => {
+        const ref = `${g.book} ${buildBookRef(g.verses)} (${translationName})`;
+        const lines = g.verses.map(v => {
+          const text = v.textContent.replace(/^\d+\s*/, '');
+          return `${v.dataset.verse} ${text}`;
+        });
+        return `${ref}\n${lines.join('\n')}`;
       });
-      const copyText = `${ref}\n${lines.join('\n')}`;
+      const copyText = blocks.join('\n\n');
       navigator.clipboard.writeText(copyText).then(() => {
         clearSelection();
       });
