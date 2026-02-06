@@ -233,6 +233,15 @@
       font-size: 0.85em;
       color: #999;
     }
+    .chapter-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 2px;
+      background: #5c7cfa;
+      transition: width 0.15s ease-out;
+      width: 0;
+    }
     .verse {
       margin-bottom: 8px;
       line-height: 1.6;
@@ -553,7 +562,7 @@
           }
 
           const verses = chapters[chapterIdx];
-          html += `<div class="chapter"><div class="chapter-title" data-book="${bookName}" data-chapter="${ch}">${bookName} — Глава ${ch}<span class="current-verse"></span></div>`;
+          html += `<div class="chapter"><div class="chapter-title" data-book="${bookName}" data-chapter="${ch}">${bookName} — Глава ${ch}<span class="current-verse"></span><div class="chapter-progress"></div></div>`;
 
           let vStart = 1;
           let vEnd = verses.length;
@@ -627,21 +636,27 @@
       titles.forEach(title => {
         const rect = title.getBoundingClientRect();
         const verseSpan = title.querySelector('.current-verse');
+        const progressBar = title.querySelector('.chapter-progress');
         if (rect.top <= 0) {
           // Заголовок прилип — найти текущий стих в этой главе
           const chapter = title.parentElement;
           const verses = chapter.querySelectorAll('.verse');
           let currentVerse = null;
+          let visibleCount = 0;
           for (const v of verses) {
             if (v.getBoundingClientRect().top <= 40) {
               currentVerse = v.dataset.verse;
+              visibleCount++;
             } else {
               break;
             }
           }
           verseSpan.textContent = currentVerse ? `стих ${currentVerse}` : '';
+          const progress = verses.length > 0 ? (visibleCount / verses.length) * 100 : 0;
+          progressBar.style.width = progress + '%';
         } else {
           verseSpan.textContent = '';
+          progressBar.style.width = '0';
         }
       });
     });
