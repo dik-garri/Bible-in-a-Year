@@ -67,6 +67,8 @@ python3 -m http.server 8000
 - Verse selection & copy: click verses to select, floating bar with "Копировать" button
   - Smart references: `5:1-3` (range), `5:1,4` (non-consecutive), `Бытие 1:5; Матфея 1:17` (cross-book)
   - Copy includes translation name, e.g., `Бытие 1:2 (Синодальный)`
+- Chapter navigation: prev/next buttons at bottom (works across books)
+- Last reading memory: auto-loads last query+translation on empty open (localStorage keys `bible-last-query`, `bible-last-translation`)
 
 **Manual query formats:**
 - `Бытие 1` — chapter, all verses
