@@ -50,20 +50,22 @@ python3 -m http.server 8000
 - `q` — query to load (e.g., `?q=Бытие 1-3`)
 - `t` — translation (`synod` or `nrt`, e.g., `?t=nrt`)
 
-**Book picker UI:**
+**Single-panel UI:**
 - Testament selection (Ветхий Завет / Новый Завет)
-- Books grid (39 OT + 27 NT books)
-- Chapters grid for selected book
-- Breadcrumb navigation with back buttons
+- Books grid (39 OT + 27 NT books), chapters grid, breadcrumb navigation
+- Manual query input with examples, "Показать тексты" button
+- Auto-loads on input (debounced 400ms) and on translation change
+
+**Settings gear (⚙️) in top-right corner:**
+- Translation: Синодальный / НРП
+- Font size (A−/A+, range 12–28px, localStorage key `bible-font-size`)
+- Font family: serif/sans-serif/mono (localStorage key `bible-font-family`)
+- Dark/light theme (localStorage key `bible-dark-theme`)
 
 **Reader features:**
 - Sticky chapter header: "Бытие — Глава 1:14" (updates verse on scroll)
 - Chapter progress bar (thin blue line under sticky header)
 - Dynamic page title (shows current query, e.g., "Бытие 1 — Библия")
-- Settings gear (⚙️) in top-right corner with panel:
-  - Font size (A−/A+, range 12–28px, localStorage key `bible-font-size`)
-  - Font family: serif/sans-serif/mono (localStorage key `bible-font-family`)
-  - Dark/light theme (localStorage key `bible-dark-theme`)
 - Verse selection & copy: click verses to select, floating bar with "Копировать" button
   - Smart references: `5:1-3` (range), `5:1,4` (non-consecutive), `Бытие 1:5; Матфея 1:17` (cross-book)
   - Copy includes translation name, e.g., `Бытие 1:2 (Синодальный)`
