@@ -277,10 +277,13 @@
     .verse:hover {
       background: rgba(92, 124, 250, 0.08);
     }
-    .verse.copied {
+    .verse.selected {
       background: rgba(92, 124, 250, 0.15);
     }
-    .copy-toast {
+    body.dark .verse.selected {
+      background: rgba(123, 155, 255, 0.2);
+    }
+    .selection-bar {
       position: fixed;
       bottom: 20px;
       left: 50%;
@@ -288,15 +291,32 @@
       background: #333;
       color: white;
       padding: 8px 16px;
-      border-radius: 20px;
+      border-radius: 24px;
       font-size: 14px;
       z-index: 200;
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
-    .copy-toast.show { opacity: 1; }
-    body.dark .copy-toast { background: #555; }
+    .selection-bar.show { display: flex; }
+    .selection-bar button {
+      background: #5c7cfa;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .selection-bar button:hover { background: #4263eb; }
+    .selection-bar .clear-btn {
+      background: transparent;
+      color: #aaa;
+      padding: 6px 8px;
+    }
+    .selection-bar .clear-btn:hover { color: white; background: transparent; }
+    body.dark .selection-bar { background: #444; }
     .verse-num {
       font-weight: bold;
       color: #888;
@@ -438,7 +458,11 @@
   <div id="content" class="content">
     <p style="color: #888; text-align: center;">Выберите книгу и главу или введите запрос вручную</p>
   </div>
-  <div class="copy-toast" id="copy-toast">Скопировано</div>
+  <div class="selection-bar" id="selection-bar">
+    <span id="selection-count"></span>
+    <button onclick="copySelected()">Копировать</button>
+    <button class="clear-btn" onclick="clearSelection()">✕</button>
+  </div>
 
   <script>
     const bookCache = {};  // { 'synod:gn': [...chapters], 'nrt:gn': [...] }
@@ -792,25 +816,87 @@
       if (e.key === 'Enter') showTexts();
     });
 
-    // Копирование стиха по клику
-    let toastTimer;
+    // Выделение и копирование стихов
+    function updateSelectionBar() {
+      const selected = document.querySelectorAll('.verse.selected');
+      const bar = document.getElementById('selection-bar');
+      const count = document.getElementById('selection-count');
+      if (selected.length > 0) {
+        count.textContent = `Выбрано: ${selected.length}`;
+        bar.classList.add('show');
+      } else {
+        bar.classList.remove('show');
+      }
+    }
+
+    function clearSelection() {
+      document.querySelectorAll('.verse.selected').forEach(v => v.classList.remove('selected'));
+      updateSelectionBar();
+    }
+
+    function buildBookRef(verses) {
+      // Группируем последовательные стихи в диапазоны
+      const groups = [];
+      let curCh = null, curRun = null;
+      for (const v of verses) {
+        const ch = v.dataset.chapter;
+        const num = parseInt(v.dataset.verse);
+        if (ch === curCh && curRun && num === curRun.end + 1) {
+          curRun.end = num;
+        } else {
+          curRun = { ch, start: num, end: num };
+          groups.push(curRun);
+        }
+        curCh = ch;
+      }
+      const sameChapter = groups.every(g => g.ch === groups[0].ch);
+      if (sameChapter) {
+        const ch = groups[0].ch;
+        const parts = groups.map(g =>
+          g.start === g.end ? `${g.start}` : `${g.start}-${g.end}`
+        );
+        return `${ch}:${parts.join(',')}`;
+      }
+      return groups.map(g =>
+        g.start === g.end ? `${g.ch}:${g.start}` : `${g.ch}:${g.start}-${g.end}`
+      ).join(',');
+    }
+
+    function copySelected() {
+      const selected = Array.from(document.querySelectorAll('.verse.selected'));
+      if (!selected.length) return;
+
+      // Группируем по книгам (сохраняя порядок)
+      const bookGroups = [];
+      let curBook = null, curGroup = null;
+      for (const v of selected) {
+        const book = v.dataset.book;
+        if (book !== curBook) {
+          curGroup = { book, verses: [] };
+          bookGroups.push(curGroup);
+          curBook = book;
+        }
+        curGroup.verses.push(v);
+      }
+
+      const refParts = bookGroups.map(g => `${g.book} ${buildBookRef(g.verses)}`);
+      const ref = refParts.join('; ');
+
+      const lines = selected.map(v => {
+        const text = v.textContent.replace(/^\d+\s*/, '');
+        return `${v.dataset.verse} ${text}`;
+      });
+      const copyText = `${ref}\n${lines.join('\n')}`;
+      navigator.clipboard.writeText(copyText).then(() => {
+        clearSelection();
+      });
+    }
+
     document.getElementById('content').addEventListener('click', (e) => {
       const verse = e.target.closest('.verse');
       if (!verse) return;
-      const book = verse.dataset.book;
-      const ch = verse.dataset.chapter;
-      const v = verse.dataset.verse;
-      const text = verse.textContent.replace(/^\d+\s*/, '');
-      const copyText = `${book} ${ch}:${v} — ${text}`;
-      navigator.clipboard.writeText(copyText).then(() => {
-        verse.classList.add('copied');
-        setTimeout(() => verse.classList.remove('copied'), 600);
-        const toast = document.getElementById('copy-toast');
-        toast.textContent = `${book} ${ch}:${v} скопирован`;
-        toast.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toast.classList.remove('show'), 1500);
-      });
+      verse.classList.toggle('selected');
+      updateSelectionBar();
     });
 
     // Обновляет номер стиха в sticky заголовке главы при скролле
