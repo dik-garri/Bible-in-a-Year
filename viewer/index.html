@@ -943,39 +943,12 @@
       }
 
       // Навигация пред/след глава
-      if (parsed.length === 1 && parsed[0].verseStart === null) {
-        const item = parsed[0];
-        const allBooks = [...OT_BOOKS, ...NT_BOOKS];
-        const bookIdx = allBooks.findIndex(b => b[1] === item.abbrev);
-        const book = allBooks[bookIdx];
-
-        let prevLabel = null, prevQuery = null;
-        let nextLabel = null, nextQuery = null;
-
-        if (item.chapterStart > 1) {
-          prevLabel = `← ${book[0]} ${item.chapterStart - 1}`;
-          prevQuery = `${book[0]} ${item.chapterStart - 1}`;
-        } else if (bookIdx > 0) {
-          const pb = allBooks[bookIdx - 1];
-          prevLabel = `← ${pb[0]} ${pb[2]}`;
-          prevQuery = `${pb[0]} ${pb[2]}`;
-        }
-
-        if (item.chapterEnd < book[2]) {
-          nextLabel = `${book[0]} ${item.chapterEnd + 1} →`;
-          nextQuery = `${book[0]} ${item.chapterEnd + 1}`;
-        } else if (bookIdx < allBooks.length - 1) {
-          const nb = allBooks[bookIdx + 1];
-          nextLabel = `${nb[0]} 1 →`;
-          nextQuery = `${nb[0]} 1`;
-        }
-
-        if (prevLabel || nextLabel) {
-          html += '<div class="chapter-nav">';
-          if (prevLabel) html += `<button onclick="navigateTo('${prevQuery}')">${prevLabel}</button>`;
-          if (nextLabel) html += `<button onclick="navigateTo('${nextQuery}')">${nextLabel}</button>`;
-          html += '</div>';
-        }
+      const nav = getChapterNav(parsed);
+      if (nav) {
+        html += '<div class="chapter-nav">';
+        if (nav.prev) html += `<button onclick="navigateTo('${nav.prev.query}')">${nav.prev.label}</button>`;
+        if (nav.next) html += `<button onclick="navigateTo('${nav.next.query}')">${nav.next.label}</button>`;
+        html += '</div>';
       }
 
       return html;
@@ -1143,6 +1116,66 @@
         }
       });
     });
+
+    // Вычисляет prev/next главу для текущего запроса
+    function getChapterNav(parsed) {
+      if (!parsed || parsed.length !== 1 || parsed[0].verseStart !== null) return null;
+      const item = parsed[0];
+      const allBooks = [...OT_BOOKS, ...NT_BOOKS];
+      const bookIdx = allBooks.findIndex(b => b[1] === item.abbrev);
+      if (bookIdx < 0) return null;
+      const book = allBooks[bookIdx];
+      const nav = { prev: null, next: null };
+
+      if (item.chapterStart > 1) {
+        nav.prev = { label: `← ${book[0]} ${item.chapterStart - 1}`, query: `${book[0]} ${item.chapterStart - 1}` };
+      } else if (bookIdx > 0) {
+        const pb = allBooks[bookIdx - 1];
+        nav.prev = { label: `← ${pb[0]} ${pb[2]}`, query: `${pb[0]} ${pb[2]}` };
+      }
+      if (item.chapterEnd < book[2]) {
+        nav.next = { label: `${book[0]} ${item.chapterEnd + 1} →`, query: `${book[0]} ${item.chapterEnd + 1}` };
+      } else if (bookIdx < allBooks.length - 1) {
+        const nb = allBooks[bookIdx + 1];
+        nav.next = { label: `${nb[0]} 1 →`, query: `${nb[0]} 1` };
+      }
+      return (nav.prev || nav.next) ? nav : null;
+    }
+
+    // Клавиатурная навигация: ← → для пред/след главы
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const query = document.getElementById('query').value.trim();
+      if (!query) return;
+      const parsed = parseQuery(query);
+      const nav = getChapterNav(parsed);
+      if (!nav) return;
+      if (e.key === 'ArrowLeft' && nav.prev) navigateTo(nav.prev.query);
+      if (e.key === 'ArrowRight' && nav.next) navigateTo(nav.next.query);
+    });
+
+    // Свайп навигация на мобильных
+    (function() {
+      let touchStartX = 0;
+      let touchStartY = 0;
+      document.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      }, { passive: true });
+      document.addEventListener('touchend', (e) => {
+        const dx = e.changedTouches[0].screenX - touchStartX;
+        const dy = e.changedTouches[0].screenY - touchStartY;
+        if (Math.abs(dx) < 80 || Math.abs(dy) > Math.abs(dx) * 0.5) return;
+        const query = document.getElementById('query').value.trim();
+        if (!query) return;
+        const parsed = parseQuery(query);
+        const nav = getChapterNav(parsed);
+        if (!nav) return;
+        if (dx > 0 && nav.prev) navigateTo(nav.prev.query);
+        if (dx < 0 && nav.next) navigateTo(nav.next.query);
+      }, { passive: true });
+    })();
 
     // Загрузка из URL-параметров или последнего чтения
     (function() {
