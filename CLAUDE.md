@@ -69,6 +69,7 @@ python3 -m http.server 8000
 - Verse selection & copy: click verses to select, floating bar with "Копировать" button
   - Smart references: `5:1-3` (range), `5:1,4` (non-consecutive), `Бытие 1:5; Матфея 1:17` (cross-book)
   - Copy includes translation name, e.g., `Бытие 1:2 (Синодальный)`
+- Verse comparison: clicking a verse shows the same verse from the other translation inline below it
 - Full Bible search (🔍 button or Ctrl+F): loads full translation file (~6MB, cached), inline translation switcher (СИН/НРП), 3 tiers: exact phrase → all words → partial; click result to open chapter with auto-scroll to verse
 - Chapter navigation: prev/next buttons with short names at bottom (works across books), keyboard ←/→, swipe on mobile
 - Last reading memory: auto-loads last query+translation on empty open (localStorage keys `bible-last-query`, `bible-last-translation`)
