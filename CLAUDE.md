@@ -29,7 +29,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Key functions:**
 - `sendReadingFromSheet()` — Finds today's reading, sends message with 2 buttons
 - `buildReadingKeyboard(readingText)` — Creates 2 inline URL buttons (Синодальный / НРП)
-- `getViewerUrl(query, translation)` — Generates GitHub Pages viewer URL
+- `getViewerUrl(query, translation)` — Generates GitHub Pages viewer URL with Latin abbreviations
+- `queryToLatin(query)` — Converts Cyrillic book names to Latin abbreviations for URLs
 - `GET_BIBLE_PLAN(dateString)` — Custom spreadsheet function fetching from ODB API
 
 **Inline buttons link to:** `https://dik-garri.github.io/Bible-in-a-Year/viewer/?q={query}&t={translation}`
@@ -47,7 +48,7 @@ python3 -m http.server 8000
 ```
 
 **URL parameters:**
-- `q` — query to load (e.g., `?q=Бытие 1-3`)
+- `q` — query using Latin abbreviations (e.g., `?q=gn 1-3;mt 1`) or Cyrillic names (`?q=Бытие 1-3`). Both formats supported, Latin preferred for shorter URLs. Viewer converts to Cyrillic for display.
 - `t` — translation (`synod` or `nrt`, e.g., `?t=nrt`)
 
 **Single-panel UI:**
