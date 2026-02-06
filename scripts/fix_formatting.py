@@ -58,7 +58,7 @@ def fix_json_file(filepath: Path) -> dict:
 
 
 def main():
-    data_dir = Path(__file__).parent.parent / 'data'
+    data_dir = Path(__file__).parent.parent / 'viewer' / 'data'
 
     total_stats = {'synodal': {}, 'nrt': {}}
 

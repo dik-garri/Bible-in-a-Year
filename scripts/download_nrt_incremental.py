@@ -7,7 +7,7 @@ import json
 import urllib.request
 import os
 
-OUTPUT_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'nrt.json')
+OUTPUT_FILE = os.path.join(os.path.dirname(__file__), '..', 'viewer', 'data', 'nrt.json')
 
 CHAPTERS_PER_BOOK = [
     50, 40, 27, 36, 34, 24, 21, 4, 31, 24,

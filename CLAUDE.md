@@ -11,11 +11,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 ├── src/
 │   └── Code.gs              # Main bot code (Google Apps Script)
-├── data/
-│   ├── synodal.json         # Synodal translation (66 books, ~6MB)
-│   └── nrt.json             # NRP translation (66 books, ~6MB)
 ├── viewer/
-│   └── index.html           # Local HTML viewer for Bible texts
+│   ├── index.html           # Local HTML viewer for Bible texts
+│   └── data/
+│       ├── synodal.json     # Synodal translation (66 books, ~6MB)
+│       └── nrt.json         # NRP translation (66 books, ~6MB)
 └── scripts/
     ├── download_nrt_incremental.py  # Python script to download NRP via bolls.life API
     └── fix_formatting.py            # Fix typography issues in Bible data
@@ -84,14 +84,14 @@ python3 -m http.server 8000
 - `Бытие 1-2:3` — from ch.1 v.1 → ch.2 v.3
 - `Бытие 1; Матфея 1` — multiple books (semicolon-separated)
 
-## Bible Data (data/)
+## Bible Data (viewer/data/)
 
 **Full files** (for bulk operations):
-- `synodal.json`, `nrt.json` — all 66 books (~6MB each)
+- `viewer/data/synodal.json`, `viewer/data/nrt.json` — all 66 books (~6MB each)
 - Format: `[{"abbrev": "gn", "chapters": [["verse1", ...], ...]}, ...]`
 
 **Per-book files** (for viewer, optimized loading):
-- `synodal/{abbrev}.json`, `nrt/{abbrev}.json` — individual books (50-300KB each)
+- `viewer/data/synodal/{abbrev}.json`, `viewer/data/nrt/{abbrev}.json` — individual books (50-300KB each)
 - Format: `[["verse1", "verse2", ...], ...]` (just chapters array)
 
 **Book abbreviations:** gn, ex, lv, nm, dt, js, jud, rt, 1sm, 2sm, 1kgs, 2kgs, 1ch, 2ch, ezr, ne, et, job, ps, prv, ec, so, is, jr, lm, ez, dn, ho, jl, am, ob, jn, mi, na, hk, zp, hg, zc, ml, mt, mk, lk, jo, act, rm, 1co, 2co, gl, eph, ph, cl, 1ts, 2ts, 1tm, 2tm, tt, phm, hb, jm, 1pe, 2pe, 1jo, 2jo, 3jo, jd, re

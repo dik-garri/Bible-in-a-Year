@@ -807,7 +807,7 @@
 
     async function loadFullBible() {
       if (fullBibleCache[currentTranslation]) return fullBibleCache[currentTranslation];
-      const file = currentTranslation === 'synod' ? '../data/synodal.json' : '../data/nrt.json';
+      const file = currentTranslation === 'synod' ? 'data/synodal.json' : 'data/nrt.json';
       const resp = await fetch(file);
       const data = await resp.json();
       fullBibleCache[currentTranslation] = data;
@@ -1182,7 +1182,7 @@
       if (bookCache[cacheKey]) return bookCache[cacheKey];
 
       const dir = currentTranslation === 'synod' ? 'synodal' : 'nrt';
-      const file = `../data/${dir}/${abbrev}.json`;
+      const file = `data/${dir}/${abbrev}.json`;
 
       try {
         const response = await fetch(file);
@@ -1473,7 +1473,7 @@
           let chapters = bookCache[cacheKey];
           if (!chapters) {
             const dir = otherTranslation === 'synod' ? 'synodal' : 'nrt';
-            const resp = await fetch(`../data/${dir}/${abbrev}.json`);
+            const resp = await fetch(`data/${dir}/${abbrev}.json`);
             chapters = await resp.json();
             bookCache[cacheKey] = chapters;
           }

@@ -9,7 +9,7 @@ const CHAT_IDS = [
 ];
 
 // URL вашего просмотрщика на GitHub Pages
-const VIEWER_URL = 'https://dik-garri.github.io/Bible-in-a-Year/viewer/';
+const VIEWER_URL = 'https://church.kg/bible/';
 
 // Маппинг русских названий книг на латинские аббревиатуры
 const BOOK_ABBREV = {
