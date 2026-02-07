@@ -724,6 +724,69 @@
       color: #ff8888;
       background: #3a2020;
     }
+    /* Sepia theme */
+    body.sepia { background: #f4ecd8; color: #5b4636; }
+    body.sepia h1 { color: #6b5646; }
+    body.sepia .settings-btn, body.sepia .search-toggle-btn { background: #e8dcc8; color: #6b5646; }
+    body.sepia .search-toggle-btn:hover { background: #ddd0b8; }
+    body.sepia .search-bar { background: #efe6d0; }
+    body.sepia .search-bar input { color: #5b4636; }
+    body.sepia .search-bar .search-close:hover { color: #5b4636; }
+    body.sepia .search-translation-btn { color: #8b6914; border-right-color: #d0c4a8; }
+    body.sepia .search-result { border-bottom-color: #d8ccb0; }
+    body.sepia .search-result-ref { color: #8b6914; }
+    body.sepia .search-result-text { color: #6b5646; }
+    body.sepia .search-result-text mark { background: #e8d888; }
+    body.sepia .search-results-header { border-bottom-color: #d8ccb0; }
+    body.sepia .settings-panel { background: #efe6d0; color: #5b4636; }
+    body.sepia .settings-row button { background: #e8dcc8; color: #5b4636; border-color: #d0c4a8; }
+    body.sepia .settings-row button:hover { background: #ddd0b8; }
+    body.sepia .settings-row button.active { background: #c8b898; color: #3a2a1a; }
+    body.sepia .help-btn { background: #e8dcc8; color: #8a7a6a; border-color: #d0c4a8; }
+    body.sepia .help-btn:hover { background: #ddd0b8; color: #5b4636; }
+    body.sepia .help-popup { background: #efe6d0; color: #6b5646; }
+    body.sepia .help-popup code { background: #e8dcc8; color: #5b4636; }
+    body.sepia .input-section,
+    body.sepia .picker-section,
+    body.sepia .content { background: #faf4e4; box-shadow: 0 2px 4px rgba(90,70,50,0.1); }
+    body.sepia input[type="text"] { background: #f0e8d4; color: #5b4636; border-color: #d0c4a8; }
+    body.sepia .translation-toggle button { background: #e8dcc8; color: #5b4636; border-color: #d0c4a8; }
+    body.sepia .translation-toggle button.active { background: #c8b898; color: #3a2a1a; }
+    body.sepia .font-size-controls button { background: #e8dcc8; color: #5b4636; border-color: #d0c4a8; }
+    body.sepia .testament-buttons button { background: #faf4e4; color: #8b6914; border-color: #c8b070; }
+    body.sepia .testament-buttons button:hover,
+    body.sepia .testament-buttons button.active { background: #c8b070; color: #3a2a1a; }
+    body.sepia .books-grid button,
+    body.sepia .chapters-grid button { background: #f0e8d4; color: #5b4636; border-color: #d8ccb0; }
+    body.sepia .books-grid button:hover,
+    body.sepia .chapters-grid button:hover { filter: brightness(0.95); }
+    body.sepia .books-grid .cat-law        { background: #e0dce8; border-color: #b8b0d0; }
+    body.sepia .books-grid .cat-history    { background: #f0e4c8; border-color: #d8c8a0; }
+    body.sepia .books-grid .cat-poetry     { background: #f0d8d8; border-color: #d8b0b0; }
+    body.sepia .books-grid .cat-major-pr   { background: #d8e8d8; border-color: #b0c8a8; }
+    body.sepia .books-grid .cat-minor-pr   { background: #d8e4e0; border-color: #a8c8c0; }
+    body.sepia .books-grid .cat-gospel     { background: #e0dce8; border-color: #b8b0d0; }
+    body.sepia .books-grid .cat-acts       { background: #f0e4c8; border-color: #d8c8a0; }
+    body.sepia .books-grid .cat-pauline    { background: #e4d8e8; border-color: #c0a8c8; }
+    body.sepia .books-grid .cat-general    { background: #d8e4e0; border-color: #a8c8c0; }
+    body.sepia .books-grid .cat-prophecy   { background: #d8e8d8; border-color: #b0c8a8; }
+    body.sepia .back-btn { background: #e8dcc8; color: #5b4636; border-color: #d0c4a8; }
+    body.sepia .book-title { color: #6b5646; border-bottom-color: #d8ccb0; }
+    body.sepia .chapter-title { color: #7a6a5a; background: #faf4e4; }
+    body.sepia .verse-num { color: #a09080; }
+    body.sepia .verse.selected { background: rgba(139, 105, 20, 0.12); }
+    body.sepia .verse-compare { background: #f0e8d4; color: #6b5646; }
+    body.sepia .verse-compare-label { color: #8b6914; }
+    body.sepia .xref-icon { color: #a07020; }
+    body.sepia .xref-panel { background: #f0e8d4; }
+    body.sepia .xref-ref { color: #a07020; }
+    body.sepia .xref-text { color: #6b5646; }
+    body.sepia .xref-more { color: #a07020; }
+    body.sepia .selection-bar { background: #e8dcc8; }
+    body.sepia .chapter-nav { border-top-color: #d8ccb0; }
+    body.sepia .chapter-nav button { background: #e8dcc8; color: #5b4636; border-color: #d0c4a8; }
+    body.sepia .chapter-nav button:hover { background: #ddd0b8; }
+    body.sepia .error { color: #a04040; background: #f0e0d0; }
   </style>
 </head>
 <body>
@@ -764,8 +827,9 @@
     </div>
     <label>Тема</label>
     <div class="settings-row">
-      <button id="theme-light" onclick="setTheme(false)">☀️ День</button>
-      <button id="theme-dark" onclick="setTheme(true)">🌙 Ночь</button>
+      <button id="theme-light" onclick="setTheme('light')">☀️ День</button>
+      <button id="theme-sepia" onclick="setTheme('sepia')">📜 Сепия</button>
+      <button id="theme-dark" onclick="setTheme('dark')">🌙 Ночь</button>
     </div>
   </div>
   <h1>📖 Библия</h1>
@@ -937,16 +1001,29 @@
     applyFontSize();
 
     // Тема
-    function applyTheme(dark) {
-      document.body.classList.toggle('dark', dark);
-      document.getElementById('theme-light').classList.toggle('active', !dark);
-      document.getElementById('theme-dark').classList.toggle('active', dark);
+    function applyTheme(theme) {
+      document.body.classList.remove('dark', 'sepia');
+      if (theme === 'dark') document.body.classList.add('dark');
+      if (theme === 'sepia') document.body.classList.add('sepia');
+      ['light', 'sepia', 'dark'].forEach(t => {
+        document.getElementById('theme-' + t).classList.toggle('active', t === theme);
+      });
     }
-    function setTheme(dark) {
-      localStorage.setItem('bible-dark-theme', dark);
-      applyTheme(dark);
+    function setTheme(theme) {
+      localStorage.setItem('bible-theme', theme);
+      applyTheme(theme);
     }
-    applyTheme(localStorage.getItem('bible-dark-theme') === 'true');
+    (function() {
+      let theme = localStorage.getItem('bible-theme');
+      if (!theme) {
+        // Миграция со старого формата
+        if (localStorage.getItem('bible-dark-theme') === 'true') theme = 'dark';
+        else theme = 'light';
+        localStorage.setItem('bible-theme', theme);
+        localStorage.removeItem('bible-dark-theme');
+      }
+      applyTheme(theme);
+    })();
 
     // Панель настроек
     function toggleSettings() {
@@ -1651,7 +1728,9 @@
       const blocks = bookGroups.map(g => {
         const ref = `${g.book} ${buildBookRef(g.verses)} (${translationName})`;
         const lines = g.verses.map(v => {
-          const text = v.textContent.replace(/^\d+\s*/, '');
+          const clone = v.cloneNode(true);
+          clone.querySelectorAll('.xref-icon').forEach(el => el.remove());
+          const text = clone.textContent.replace(/^\d+\s*/, '');
           return `${v.dataset.verse} ${text}`;
         });
         return `${ref}\n${lines.join('\n')}`;
