@@ -683,8 +683,9 @@
     </div>
     <label>Перевод</label>
     <div class="settings-row">
-      <button id="btn-synod" class="active" onclick="setTranslation('synod')">Синодальный</button>
+      <button id="btn-synod" class="active" onclick="setTranslation('synod')">СИН</button>
       <button id="btn-nrt" onclick="setTranslation('nrt')">НРП</button>
+      <button id="btn-jbl" onclick="setTranslation('jbl')">ЮБЛ</button>
     </div>
     <label>Тема</label>
     <div class="settings-row">
@@ -731,7 +732,13 @@
   </div>
 
   <script>
-    const bookCache = {};  // { 'synod:gn': [...chapters], 'nrt:gn': [...] }
+    const TRANSLATIONS = {
+      synod: { name: 'Синодальный', short: 'СИН', dir: 'synodal', full: 'data/synodal.json' },
+      nrt:   { name: 'НРП',         short: 'НРП', dir: 'nrt',     full: 'data/nrt.json' },
+      jbl:   { name: 'Юбилейный',   short: 'ЮБЛ', dir: 'jbl',     full: 'data/jbl.json' }
+    };
+    const TRANSLATION_ORDER = ['synod', 'nrt', 'jbl'];
+    const bookCache = {};
     let currentTranslation = 'synod';
 
     // Размер шрифта
@@ -807,7 +814,7 @@
 
     async function loadFullBible() {
       if (fullBibleCache[currentTranslation]) return fullBibleCache[currentTranslation];
-      const file = currentTranslation === 'synod' ? 'data/synodal.json' : 'data/nrt.json';
+      const file = TRANSLATIONS[currentTranslation].full;
       const resp = await fetch(file);
       const data = await resp.json();
       fullBibleCache[currentTranslation] = data;
@@ -1161,18 +1168,21 @@
     }
 
     function updateSearchPlaceholder() {
-      document.getElementById('search-trans-btn').textContent = currentTranslation === 'synod' ? 'СИН' : 'НРП';
+      document.getElementById('search-trans-btn').textContent = TRANSLATIONS[currentTranslation].short;
     }
 
     function toggleSearchTranslation() {
-      setTranslation(currentTranslation === 'synod' ? 'nrt' : 'synod', true);
+      const idx = TRANSLATION_ORDER.indexOf(currentTranslation);
+      const next = TRANSLATION_ORDER[(idx + 1) % TRANSLATION_ORDER.length];
+      setTranslation(next, true);
       if (document.getElementById('search-input').value.trim()) performSearch();
     }
 
     function setTranslation(t, skipLoad) {
       currentTranslation = t;
-      document.getElementById('btn-synod').classList.toggle('active', t === 'synod');
-      document.getElementById('btn-nrt').classList.toggle('active', t === 'nrt');
+      TRANSLATION_ORDER.forEach(k => {
+        document.getElementById('btn-' + k).classList.toggle('active', k === t);
+      });
       updateSearchPlaceholder();
       if (!skipLoad && document.getElementById('query').value.trim()) showTexts();
     }
@@ -1181,7 +1191,7 @@
       const cacheKey = `${currentTranslation}:${abbrev}`;
       if (bookCache[cacheKey]) return bookCache[cacheKey];
 
-      const dir = currentTranslation === 'synod' ? 'synodal' : 'nrt';
+      const dir = TRANSLATIONS[currentTranslation].dir;
       const file = `data/${dir}/${abbrev}.json`;
 
       try {
@@ -1437,7 +1447,7 @@
         curGroup.verses.push(v);
       }
 
-      const translationName = currentTranslation === 'synod' ? 'Синодальный' : 'НРП';
+      const translationName = TRANSLATIONS[currentTranslation].short;
       const blocks = bookGroups.map(g => {
         const ref = `${g.book} ${buildBookRef(g.verses)} (${translationName})`;
         const lines = g.verses.map(v => {
@@ -1456,35 +1466,40 @@
       const verse = e.target.closest('.verse');
       if (!verse) return;
       const wasSelected = verse.classList.toggle('selected');
-      // Убрать панель сравнения если снято выделение
-      const existing = verse.nextElementSibling;
-      if (existing && existing.classList.contains('verse-compare')) {
-        existing.remove();
+      // Убрать панели сравнения если снято выделение
+      let sib = verse.nextElementSibling;
+      while (sib && sib.classList.contains('verse-compare')) {
+        const next = sib.nextElementSibling;
+        sib.remove();
+        sib = next;
       }
       // Добавить сравнение если выделен
       if (wasSelected) {
         const abbrev = verse.dataset.abbrev;
         const ch = parseInt(verse.dataset.chapter);
         const v = parseInt(verse.dataset.verse);
-        const otherTranslation = currentTranslation === 'synod' ? 'nrt' : 'synod';
-        const otherName = otherTranslation === 'synod' ? 'Синодальный' : 'НРП';
-        try {
-          const cacheKey = `${otherTranslation}:${abbrev}`;
-          let chapters = bookCache[cacheKey];
-          if (!chapters) {
-            const dir = otherTranslation === 'synod' ? 'synodal' : 'nrt';
-            const resp = await fetch(`data/${dir}/${abbrev}.json`);
-            chapters = await resp.json();
-            bookCache[cacheKey] = chapters;
-          }
-          const text = chapters[ch - 1]?.[v - 1];
-          if (text) {
-            const panel = document.createElement('div');
-            panel.className = 'verse-compare';
-            panel.innerHTML = `<div class="verse-compare-label">${otherName}</div>${text}`;
-            verse.insertAdjacentElement('afterend', panel);
-          }
-        } catch (e) { /* тихо игнорируем */ }
+        const others = TRANSLATION_ORDER.filter(t => t !== currentTranslation);
+        let insertAfter = verse;
+        for (const otherTranslation of others) {
+          try {
+            const cacheKey = `${otherTranslation}:${abbrev}`;
+            let chapters = bookCache[cacheKey];
+            if (!chapters) {
+              const dir = TRANSLATIONS[otherTranslation].dir;
+              const resp = await fetch(`data/${dir}/${abbrev}.json`);
+              chapters = await resp.json();
+              bookCache[cacheKey] = chapters;
+            }
+            const text = chapters[ch - 1]?.[v - 1];
+            if (text) {
+              const panel = document.createElement('div');
+              panel.className = 'verse-compare';
+              panel.innerHTML = `<div class="verse-compare-label">${TRANSLATIONS[otherTranslation].short}</div>${text}`;
+              insertAfter.insertAdjacentElement('afterend', panel);
+              insertAfter = panel;
+            }
+          } catch (e) { /* тихо игнорируем */ }
+        }
       }
       updateSelectionBar();
     });
@@ -1621,7 +1636,7 @@
       const query = params.get('q');
       const translation = params.get('t');
 
-      if (translation === 'nrt' || translation === 'synod') {
+      if (TRANSLATIONS[translation]) {
         setTranslation(translation, true);
       }
 
