@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-"Библия за год" (Bible in a Year) — Telegram bot that sends daily Bible reading schedules with inline buttons linking to two translations (Synodal and NRP). Also includes an HTML viewer for browsing Bible texts locally.
+"Библия за год" (Bible in a Year) — Telegram bot that sends daily Bible reading schedules with inline buttons linking to translations (Synodal and NRP). Also includes an HTML viewer for browsing Bible texts in 3 translations (Synodal, NRP, Jubilee).
 
 ## Architecture
 
@@ -16,15 +16,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 │   └── data/
 │       ├── synodal.json     # Synodal translation — full (66 books, ~6MB, for search)
 │       ├── nrt.json         # NRP translation — full (66 books, ~6MB, for search)
+│       ├── jbl.json         # Jubilee translation — full (66 books, ~6MB, for search)
 │       ├── synodal/         # Synodal per-book files (for chapter display)
-│       └── nrt/             # NRP per-book files (for chapter display)
-├── data/                    # Source data & additional translations (not used by viewer)
+│       ├── nrt/             # NRP per-book files (for chapter display)
+│       └── jbl/             # Jubilee per-book files (for chapter display)
+├── data/                    # Source data & additional translations
 │   ├── RST+.SQLite3         # Synodal — SQLite source (with Strong's numbers)
 │   ├── NRT.SQLite3          # NRP — SQLite source
 │   ├── JBL.SQLite3          # Jubilee edition — SQLite source
 │   ├── KYB.SQLite3          # Kyrgyz Bible — SQLite source
-│   ├── jbl.json + jbl/      # Jubilee edition — JSON (full + per-book)
-│   ├── kyb.json + kyb/      # Kyrgyz Bible — JSON (full + per-book)
+│   ├── kyb.json + kyb/      # Kyrgyz Bible — JSON (full + per-book, not in viewer)
 │   └── verse_count_diff.csv # Verse count differences across translations
 └── scripts/
     ├── download_nrt_incremental.py  # Download NRP via bolls.life API
@@ -60,7 +61,7 @@ python3 -m http.server 8000
 
 **URL parameters:**
 - `q` — query using Latin abbreviations (e.g., `?q=gn 1-3;mt 1`) or Cyrillic names (`?q=Бытие 1-3`). Both formats supported, Latin preferred for shorter URLs. Viewer converts to Cyrillic for display.
-- `t` — translation (`synod` or `nrt`, e.g., `?t=nrt`)
+- `t` — translation (`synod`, `nrt`, or `jbl`, e.g., `?t=jbl`)
 
 **Single-panel UI:**
 - Testament selection (Ветхий Завет / Новый Завет)
@@ -69,7 +70,7 @@ python3 -m http.server 8000
 - Auto-loads on input (debounced 400ms) and on translation change
 
 **Settings gear (⚙️) in top-right corner:**
-- Translation: Синодальный / НРП
+- Translation: СИН / НРП / ЮБЛ (Synodal / NRP / Jubilee)
 - Font size (A−/A+, range 12–28px, localStorage key `bible-font-size`)
 - Font family: serif/sans-serif/mono (localStorage key `bible-font-family`)
 - Dark/light theme (localStorage key `bible-dark-theme`)
@@ -80,9 +81,9 @@ python3 -m http.server 8000
 - Dynamic page title (shows current query, e.g., "Бытие 1 — Библия")
 - Verse selection & copy: click verses to select, floating bar with "Копировать" button
   - Smart references: `5:1-3` (range), `5:1,4` (non-consecutive), `Бытие 1:5; Матфея 1:17` (cross-book)
-  - Copy includes translation name, e.g., `Бытие 1:2 (Синодальный)`
-- Verse comparison: clicking a verse shows the same verse from the other translation inline below it
-- Full Bible search (🔍 button or Ctrl+F): loads full translation file (~6MB, cached), inline translation switcher (СИН/НРП), 3 tiers: exact phrase → all words → partial; click result to open chapter with auto-scroll to verse
+  - Copy includes translation short name, e.g., `Бытие 1:2 (СИН)`
+- Verse comparison: clicking a verse shows the same verse from all other translations inline below it (2 comparison panels)
+- Full Bible search (🔍 button or Ctrl+F): loads full translation file (~6MB, cached), inline translation switcher (СИН→НРП→ЮБЛ cycle), 3 tiers: exact phrase → all words → partial; click result to open chapter with auto-scroll to verse
 - Chapter navigation: prev/next buttons with short names at bottom (works across books), keyboard ←/→, swipe on mobile
 - Last reading memory: auto-loads last query+translation on empty open (localStorage keys `bible-last-query`, `bible-last-translation`)
 
@@ -100,13 +101,12 @@ python3 -m http.server 8000
 **Data source:** SQLite databases in `data/` (RST+, NRT, JBL, KYB). JSON files are generated from SQLite using a conversion script that strips markup (Strong's numbers `<S>`, footnotes `<f>`, paragraph breaks `<pb/>`, emphasis `<i>/<e>/<J>` tags).
 
 **Viewer data (viewer/data/):**
-- `synodal.json`, `nrt.json` — full translations for search (~6MB each)
-- `synodal/`, `nrt/` — per-book files for chapter display (50-300KB each)
+- `synodal.json`, `nrt.json`, `jbl.json` — full translations for search (~6MB each)
+- `synodal/`, `nrt/`, `jbl/` — per-book files for chapter display (50-300KB each)
 - Format: `[{"abbrev": "gn", "chapters": [["verse1", ...], ...]}, ...]`
 - Per-book format: `[["verse1", "verse2", ...], ...]` (just chapters array)
 
-**Additional translations (data/):**
-- `jbl.json` + `jbl/` — Jubilee edition (Юбилейное издание, Свет на Востоке, 2008)
+**Additional translations (data/, not in viewer):**
 - `kyb.json` + `kyb/` — Kyrgyz Bible (Кыргыз тилиндеги Библия, 2004)
 
 **All translations:** 66 books, 1189 chapters, ~31162 verses each.
