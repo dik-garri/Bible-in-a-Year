@@ -244,6 +244,13 @@
       min-width: 24px;
       text-align: center;
     }
+    .compare-checkbox {
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
     button.show-btn {
       width: 100%;
       padding: 6px;
@@ -687,6 +694,12 @@
       <button id="btn-nrt" onclick="setTranslation('nrt')">НРП</button>
       <button id="btn-jbl" onclick="setTranslation('jbl')">ЮБЛ</button>
     </div>
+    <label>Сравнение</label>
+    <div class="settings-row">
+      <label class="compare-checkbox"><input type="checkbox" id="cmp-synod" checked onchange="saveCompareSettings()"> СИН</label>
+      <label class="compare-checkbox"><input type="checkbox" id="cmp-nrt" checked onchange="saveCompareSettings()"> НРП</label>
+      <label class="compare-checkbox"><input type="checkbox" id="cmp-jbl" checked onchange="saveCompareSettings()"> ЮБЛ</label>
+    </div>
     <label>Тема</label>
     <div class="settings-row">
       <button id="theme-light" onclick="setTheme(false)">☀️ День</button>
@@ -740,6 +753,24 @@
     const TRANSLATION_ORDER = ['synod', 'nrt', 'jbl'];
     const bookCache = {};
     let currentTranslation = 'synod';
+
+    // Сравнение переводов
+    function saveCompareSettings() {
+      const enabled = TRANSLATION_ORDER.filter(t => document.getElementById('cmp-' + t).checked);
+      localStorage.setItem('bible-compare', JSON.stringify(enabled));
+    }
+    function getCompareTranslations() {
+      return TRANSLATION_ORDER.filter(t => t !== currentTranslation && document.getElementById('cmp-' + t).checked);
+    }
+    (function loadCompareSettings() {
+      const saved = localStorage.getItem('bible-compare');
+      if (saved) {
+        const enabled = JSON.parse(saved);
+        TRANSLATION_ORDER.forEach(t => {
+          document.getElementById('cmp-' + t).checked = enabled.includes(t);
+        });
+      }
+    })();
 
     // Размер шрифта
     let contentFontSize = parseInt(localStorage.getItem('bible-font-size')) || 17;
@@ -1478,7 +1509,7 @@
         const abbrev = verse.dataset.abbrev;
         const ch = parseInt(verse.dataset.chapter);
         const v = parseInt(verse.dataset.verse);
-        const others = TRANSLATION_ORDER.filter(t => t !== currentTranslation);
+        const others = getCompareTranslations();
         let insertAfter = verse;
         for (const otherTranslation of others) {
           try {
