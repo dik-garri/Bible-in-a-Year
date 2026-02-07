@@ -75,7 +75,7 @@ python3 -m http.server 8000
 - Comparison: checkboxes to choose which translations to show on verse click
 - Font size (A−/A+, range 12–28px, localStorage key `bible-font-size`)
 - Font family: serif/sans-serif/mono (localStorage key `bible-font-family`)
-- Dark/light theme (localStorage key `bible-dark-theme`)
+- Theme: Day/Sepia/Night (localStorage key `bible-theme`; migrates from old `bible-dark-theme`)
 
 **Reader features:**
 - Sticky chapter header with short book names: "Быт. 1:14" on scroll, full name "Бытие — Глава 1" when static (BOOK_SHORT map)
@@ -85,7 +85,7 @@ python3 -m http.server 8000
   - Smart references: `5:1-3` (range), `5:1,4` (non-consecutive), `Бытие 1:5; Матфея 1:17` (cross-book)
   - Copy includes translation short name, e.g., `Бытие 1:2 (СИН)`
 - Verse comparison: clicking a verse shows the same verse from other translations inline below it (configurable in ⚙️)
-- Cross-references (parallel places): ⇄ icon next to verses with references; click shows panel with top 5 + "Ещё" button; text from current translation; click reference to navigate; data from OpenBible.info (42K refs, votes≥10, CC-BY)
+- Cross-references (parallel places): ⇄ icon next to verses with references; click shows panel with top 5 + "Ещё" button + "Закрыть" at bottom; text from current translation; click reference to navigate; data from OpenBible.info (42K refs, votes≥10, CC-BY)
 - Full Bible search (🔍 button or Ctrl+F): loads full translation file (~6MB, cached), inline translation switcher (СИН→НРП→ЮБЛ cycle), 3 tiers: exact phrase → all words → partial; click result to open chapter with auto-scroll to verse
 - Chapter navigation: prev/next buttons with short names at bottom (works across books), keyboard ←/→, swipe on mobile
 - Last reading memory: auto-loads last query+translation on empty open (localStorage keys `bible-last-query`, `bible-last-translation`)

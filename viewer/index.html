@@ -983,10 +983,12 @@
         if (count < items.length) {
           html += `<div class="xref-more" onclick="this.parentElement._showAll()">Ещё ${items.length - count}...</div>`;
         }
+        html += `<div class="xref-more" onclick="this.parentElement._close()">✕ Закрыть</div>`;
         panel.innerHTML = html;
       }
 
       panel._showAll = () => renderItems(items.length);
+      panel._close = () => { panel.remove(); if (icon) icon.textContent = '⇄'; };
       renderItems(SHOW_INITIAL);
       if (icon) icon.textContent = '✕';
     }
