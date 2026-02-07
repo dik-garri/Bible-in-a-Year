@@ -66,7 +66,7 @@ python3 -m http.server 8000
 
 **Single-panel UI:**
 - Testament selection (Ветхий Завет / Новый Завет)
-- Books grid (39 OT + 27 NT books), chapters grid, breadcrumb navigation
+- Books grid (39 OT + 27 NT books) color-coded by category (law, history, poetry, prophets, gospels, epistles, etc.), chapters grid
 - Manual query input with "?" help button (popup with format examples), "Показать тексты" button
 - Auto-loads on input (debounced 400ms) and on translation change
 
@@ -117,7 +117,9 @@ python3 -m http.server 8000
 
 **SQLite schema:** `books` (book_number, short_name, long_name), `verses` (book_number, chapter, verse, text). Book numbers are multiples of 10 (10=Gen, 20=Exo, ..., 730=Rev).
 
-**Book abbreviations:** gn, ex, lv, nm, dt, js, jud, rt, 1sm, 2sm, 1kgs, 2kgs, 1ch, 2ch, ezr, ne, et, job, ps, prv, ec, so, is, jr, lm, ez, dn, ho, jl, am, ob, jn, mi, na, hk, zp, hg, zc, ml, mt, mk, lk, jo, act, rm, 1co, 2co, gl, eph, ph, cl, 1ts, 2ts, 1tm, 2tm, tt, phm, hb, jm, 1pe, 2pe, 1jo, 2jo, 3jo, jd, re
+**NT book order:** Eastern Orthodox (Synodal) — Gospels → Acts → General epistles (Jas–Jude) → Pauline epistles (Rom–Heb) → Revelation.
+
+**Book abbreviations:** gn, ex, lv, nm, dt, js, jud, rt, 1sm, 2sm, 1kgs, 2kgs, 1ch, 2ch, ezr, ne, et, job, ps, prv, ec, so, is, jr, lm, ez, dn, ho, jl, am, ob, jn, mi, na, hk, zp, hg, zc, ml, mt, mk, lk, jo, act, jm, 1pe, 2pe, 1jo, 2jo, 3jo, jd, rm, 1co, 2co, gl, eph, ph, cl, 1ts, 2ts, 1tm, 2tm, tt, phm, hb, re
 
 ## Data Quality
 

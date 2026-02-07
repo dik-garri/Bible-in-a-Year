@@ -386,11 +386,17 @@
       transition: all 0.2s;
       text-align: left;
     }
-    .books-grid button:hover {
-      background: #5c7cfa;
-      color: white;
-      border-color: #5c7cfa;
-    }
+    .books-grid button:hover { filter: brightness(0.9); }
+    .books-grid .cat-law        { background: #e8f0fe; border-color: #a8c7fa; }
+    .books-grid .cat-history    { background: #fef3e0; border-color: #f5c87a; }
+    .books-grid .cat-poetry     { background: #fce4ec; border-color: #f48fb1; }
+    .books-grid .cat-major-pr   { background: #e8f5e9; border-color: #a5d6a7; }
+    .books-grid .cat-minor-pr   { background: #e0f2f1; border-color: #80cbc4; }
+    .books-grid .cat-gospel     { background: #e8f0fe; border-color: #a8c7fa; }
+    .books-grid .cat-acts       { background: #fef3e0; border-color: #f5c87a; }
+    .books-grid .cat-pauline    { background: #f3e5f5; border-color: #ce93d8; }
+    .books-grid .cat-general    { background: #e0f2f1; border-color: #80cbc4; }
+    .books-grid .cat-prophecy   { background: #e8f5e9; border-color: #a5d6a7; }
     .chapters-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
@@ -687,9 +693,18 @@
     }
     body.dark .books-grid button:hover,
     body.dark .chapters-grid button:hover {
-      background: #7b9bff;
-      color: #1a1a1a;
+      filter: brightness(1.3);
     }
+    body.dark .books-grid .cat-law        { background: #2a3a5c; border-color: #4a6a9a; color: #c8d8f8; }
+    body.dark .books-grid .cat-history    { background: #4a3a20; border-color: #8a6a30; color: #f0d8a0; }
+    body.dark .books-grid .cat-poetry     { background: #4a2a3a; border-color: #8a4a6a; color: #f0b8d0; }
+    body.dark .books-grid .cat-major-pr   { background: #2a4a2a; border-color: #4a8a4a; color: #b0e0b0; }
+    body.dark .books-grid .cat-minor-pr   { background: #204040; border-color: #408080; color: #a0d8d0; }
+    body.dark .books-grid .cat-gospel     { background: #2a3a5c; border-color: #4a6a9a; color: #c8d8f8; }
+    body.dark .books-grid .cat-acts       { background: #4a3a20; border-color: #8a6a30; color: #f0d8a0; }
+    body.dark .books-grid .cat-pauline    { background: #3a2a4a; border-color: #6a4a8a; color: #d8b8f0; }
+    body.dark .books-grid .cat-general    { background: #204040; border-color: #408080; color: #a0d8d0; }
+    body.dark .books-grid .cat-prophecy   { background: #2a4a2a; border-color: #4a8a4a; color: #b0e0b0; }
     body.dark .back-btn {
       background: #333;
       color: #d4d4d4;
@@ -1177,13 +1192,35 @@
     // Книги Нового Завета
     const NT_BOOKS = [
       ['Матфея', 'mt', 28], ['Марка', 'mk', 16], ['Луки', 'lk', 24], ['Иоанна', 'jo', 21],
-      ['Деяния', 'act', 28], ['Римлянам', 'rm', 16], ['1 Коринфянам', '1co', 16], ['2 Коринфянам', '2co', 13],
+      ['Деяния', 'act', 28],
+      ['Иакова', 'jm', 5], ['1 Петра', '1pe', 5], ['2 Петра', '2pe', 3],
+      ['1 Иоанна', '1jo', 5], ['2 Иоанна', '2jo', 1], ['3 Иоанна', '3jo', 1], ['Иуды', 'jd', 1],
+      ['Римлянам', 'rm', 16], ['1 Коринфянам', '1co', 16], ['2 Коринфянам', '2co', 13],
       ['Галатам', 'gl', 6], ['Ефесянам', 'eph', 6], ['Филиппийцам', 'ph', 4], ['Колоссянам', 'cl', 4],
       ['1 Фессалоникийцам', '1ts', 5], ['2 Фессалоникийцам', '2ts', 3], ['1 Тимофею', '1tm', 6], ['2 Тимофею', '2tm', 4],
-      ['Титу', 'tt', 3], ['Филимону', 'phm', 1], ['Евреям', 'hb', 13], ['Иакова', 'jm', 5],
-      ['1 Петра', '1pe', 5], ['2 Петра', '2pe', 3], ['1 Иоанна', '1jo', 5], ['2 Иоанна', '2jo', 1],
-      ['3 Иоанна', '3jo', 1], ['Иуды', 'jd', 1], ['Откровение', 're', 22]
+      ['Титу', 'tt', 3], ['Филимону', 'phm', 1], ['Евреям', 'hb', 13],
+      ['Откровение', 're', 22]
     ];
+
+    const BOOK_CATEGORY = {
+      gn:'law', ex:'law', lv:'law', nm:'law', dt:'law',
+      js:'history', jud:'history', rt:'history', '1sm':'history', '2sm':'history',
+      '1kgs':'history', '2kgs':'history', '1ch':'history', '2ch':'history',
+      ezr:'history', ne:'history', et:'history',
+      job:'poetry', ps:'poetry', prv:'poetry', ec:'poetry', so:'poetry',
+      is:'major-pr', jr:'major-pr', lm:'major-pr', ez:'major-pr', dn:'major-pr',
+      ho:'minor-pr', jl:'minor-pr', am:'minor-pr', ob:'minor-pr', jn:'minor-pr',
+      mi:'minor-pr', na:'minor-pr', hk:'minor-pr', zp:'minor-pr', hg:'minor-pr',
+      zc:'minor-pr', ml:'minor-pr',
+      mt:'gospel', mk:'gospel', lk:'gospel', jo:'gospel',
+      act:'acts',
+      rm:'pauline', '1co':'pauline', '2co':'pauline', gl:'pauline', eph:'pauline',
+      ph:'pauline', cl:'pauline', '1ts':'pauline', '2ts':'pauline', '1tm':'pauline',
+      '2tm':'pauline', tt:'pauline', phm:'pauline', hb:'pauline',
+      jm:'general', '1pe':'general', '2pe':'general', '1jo':'general', '2jo':'general',
+      '3jo':'general', jd:'general',
+      re:'prophecy'
+    };
 
     // Маппинг русских названий на аббревиатуры
     const BOOK_MAP = {
@@ -1274,17 +1311,7 @@
     let currentTestament = null;
     let currentBook = null;
 
-    function updateBreadcrumb() {
-      const bc = document.getElementById('breadcrumb');
-      let html = '<span onclick="resetPicker()">Выбор</span>';
-      if (currentTestament) {
-        html += ` → <span onclick="showTestament(\'${currentTestament}\')">${currentTestament === 'ot' ? 'ВЗ' : 'НЗ'}</span>`;
-      }
-      if (currentBook) {
-        html += ` → ${currentBook[0]}`;
-      }
-      bc.innerHTML = html;
-    }
+    function updateBreadcrumb() {}
 
     function resetPicker() {
       currentTestament = null;
@@ -1306,7 +1333,8 @@
       let html = '<button class="back-btn" onclick="resetPicker()">← Назад</button>';
       html += '<div class="books-grid">';
       for (const book of books) {
-        html += `<button onclick="showBook('${book[0]}', '${book[1]}', ${book[2]})">${book[0]}</button>`;
+        const cat = BOOK_CATEGORY[book[1]] || '';
+        html += `<button class="cat-${cat}" onclick="showBook('${book[0]}', '${book[1]}', ${book[2]})">${book[0]}</button>`;
       }
       html += '</div>';
 
