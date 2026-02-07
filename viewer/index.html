@@ -1752,8 +1752,18 @@
       if (e.target.classList.contains('xref-ref')) {
         const q = e.target.dataset.query;
         if (q) {
-          document.getElementById('query').value = queryToCyrillic(q);
-          showTexts();
+          const parsed = parseXrefRef(q);
+          const chapterQuery = parsed ? `${parsed.abbrev} ${parsed.ch}` : q;
+          document.getElementById('query').value = queryToCyrillic(chapterQuery);
+          await showTexts();
+          if (parsed) {
+            const el = document.querySelector(`.verse[data-abbrev="${parsed.abbrev}"][data-chapter="${parsed.ch}"][data-verse="${parsed.vStart}"]`);
+            if (el) {
+              el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+              el.classList.add('selected');
+              setTimeout(() => el.classList.remove('selected'), 1500);
+            }
+          }
         }
         return;
       }
