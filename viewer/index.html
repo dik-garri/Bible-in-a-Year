@@ -86,6 +86,10 @@
     }
     .settings-btn:hover { transform: rotate(30deg); }
     .search-toggle-btn:hover { background: #f0f0f0; }
+    @media (max-width: 480px) {
+      .top-buttons { top: 6px; right: 6px; gap: 4px; }
+      .settings-btn, .search-toggle-btn { width: 32px; height: 32px; font-size: 16px; }
+    }
     body.dark .settings-btn, body.dark .search-toggle-btn { background: #333; color: #d4d4d4; }
     body.dark .search-toggle-btn:hover { background: #444; }
     .search-bar {
