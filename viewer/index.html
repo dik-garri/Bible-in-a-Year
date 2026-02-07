@@ -506,6 +506,53 @@
       color: #aaa;
     }
     body.dark .verse-compare-label { color: #7b9bff; }
+    .xref-icon {
+      cursor: pointer;
+      font-size: 13px;
+      color: #c07b20;
+      margin-left: 4px;
+      vertical-align: super;
+      user-select: none;
+    }
+    .xref-icon:hover { color: #a06010; }
+    body.dark .xref-icon { color: #e8a838; }
+    body.dark .xref-icon:hover { color: #f0c060; }
+    .xref-panel {
+      background: #f5f5ee;
+      border-left: 3px solid #e8a838;
+      padding: 8px 10px;
+      margin: 2px 0 8px 20px;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.85em;
+      line-height: 1.5;
+    }
+    body.dark .xref-panel {
+      background: #2e2e24;
+    }
+    .xref-item {
+      margin-bottom: 6px;
+    }
+    .xref-ref {
+      font-weight: bold;
+      color: #c07b20;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .xref-ref:hover { text-decoration: underline; }
+    body.dark .xref-ref { color: #e8a838; }
+    .xref-text {
+      color: #555;
+      margin-top: 1px;
+    }
+    body.dark .xref-text { color: #aaa; }
+    .xref-more {
+      color: #c07b20;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .xref-more:hover { text-decoration: underline; }
+    body.dark .xref-more { color: #e8a838; }
     .selection-bar {
       position: fixed;
       bottom: 20px;
@@ -771,6 +818,99 @@
         });
       }
     })();
+
+    // Параллельные места (cross-references)
+    const xrefCache = {};
+    async function loadXref(abbrev) {
+      if (xrefCache[abbrev]) return xrefCache[abbrev];
+      try {
+        const resp = await fetch(`data/xref/${abbrev}.json`);
+        if (!resp.ok) return {};
+        const data = await resp.json();
+        xrefCache[abbrev] = data;
+        return data;
+      } catch (e) { return {}; }
+    }
+
+    function parseXrefRef(ref) {
+      const m = ref.match(/^([a-z0-9]+)\s+(\d+):(\d+)(?:-(\d+))?$/);
+      if (!m) return null;
+      return { abbrev: m[1], ch: parseInt(m[2]), vStart: parseInt(m[3]), vEnd: m[4] ? parseInt(m[4]) : parseInt(m[3]) };
+    }
+
+    function formatXrefRef(ref) {
+      const short = BOOK_SHORT[ref.abbrev] || ref.abbrev;
+      if (ref.vStart === ref.vEnd) return `${short} ${ref.ch}:${ref.vStart}`;
+      return `${short} ${ref.ch}:${ref.vStart}-${ref.vEnd}`;
+    }
+
+    async function showXrefPanel(verseEl) {
+      const icon = verseEl.querySelector('.xref-icon');
+      // Убрать существующую панель
+      const existing = verseEl.parentElement.querySelector('.xref-panel[data-for="' + verseEl.dataset.abbrev + ':' + verseEl.dataset.chapter + ':' + verseEl.dataset.verse + '"]');
+      if (existing) { existing.remove(); if (icon) icon.textContent = '⇄'; return; }
+
+      const abbrev = verseEl.dataset.abbrev;
+      const ch = verseEl.dataset.chapter;
+      const v = verseEl.dataset.verse;
+      const xrefs = await loadXref(abbrev);
+      const refs = xrefs[`${ch}:${v}`];
+      if (!refs || refs.length === 0) return;
+
+      const SHOW_INITIAL = 5;
+      const panel = document.createElement('div');
+      panel.className = 'xref-panel';
+      panel.dataset.for = `${abbrev}:${ch}:${v}`;
+      panel.innerHTML = '<div style="font-size:11px;color:#c07b20;margin-bottom:4px">Загрузка...</div>';
+
+      // Вставить после стиха (и его compare-панелей)
+      let insertAfter = verseEl;
+      let sib = verseEl.nextElementSibling;
+      while (sib && sib.classList.contains('verse-compare')) { insertAfter = sib; sib = sib.nextElementSibling; }
+      insertAfter.insertAdjacentElement('afterend', panel);
+
+      // Загрузить тексты
+      const dir = TRANSLATIONS[currentTranslation].dir;
+      const items = [];
+      for (const [refStr, votes] of refs) {
+        const parsed = parseXrefRef(refStr);
+        if (!parsed) continue;
+        try {
+          const cacheKey = `${currentTranslation}:${parsed.abbrev}`;
+          let chapters = bookCache[cacheKey];
+          if (!chapters) {
+            const resp = await fetch(`data/${dir}/${parsed.abbrev}.json`);
+            chapters = await resp.json();
+            bookCache[cacheKey] = chapters;
+          }
+          const texts = [];
+          for (let vi = parsed.vStart; vi <= parsed.vEnd; vi++) {
+            const t = chapters[parsed.ch - 1]?.[vi - 1];
+            if (t) texts.push(t);
+          }
+          if (texts.length > 0) {
+            items.push({ ref: parsed, refStr, label: formatXrefRef(parsed), text: texts.join(' '), votes });
+          }
+        } catch (e) { /* пропускаем */ }
+      }
+
+      if (items.length === 0) { panel.remove(); return; }
+
+      function renderItems(count) {
+        const visible = items.slice(0, count);
+        let html = visible.map(it =>
+          `<div class="xref-item"><span class="xref-ref" data-query="${it.refStr}">${it.label}</span><div class="xref-text">${it.text}</div></div>`
+        ).join('');
+        if (count < items.length) {
+          html += `<div class="xref-more" onclick="this.parentElement._showAll()">Ещё ${items.length - count}...</div>`;
+        }
+        panel.innerHTML = html;
+      }
+
+      panel._showAll = () => renderItems(items.length);
+      renderItems(SHOW_INITIAL);
+      if (icon) icon.textContent = '✕';
+    }
 
     // Размер шрифта
     let contentFontSize = parseInt(localStorage.getItem('bible-font-size')) || 17;
@@ -1305,7 +1445,7 @@
       return result;
     }
 
-    function renderTexts(parsed, loadedBooks) {
+    function renderTexts(parsed, loadedBooks, loadedXrefs) {
       let html = '';
 
       for (const item of parsed) {
@@ -1343,9 +1483,12 @@
             }
           }
 
+          const xrefs = loadedXrefs[item.abbrev] || {};
           for (let v = vStart; v <= vEnd && v <= verses.length; v++) {
             const text = verses[v - 1];
-            html += `<div class="verse" data-book="${bookName}" data-abbrev="${item.abbrev}" data-chapter="${ch}" data-verse="${v}"><span class="verse-num">${v}</span>${text}</div>`;
+            const hasXref = xrefs[`${ch}:${v}`];
+            const xrefIcon = hasXref ? '<span class="xref-icon" title="Параллельные места">⇄</span>' : '';
+            html += `<div class="verse" data-book="${bookName}" data-abbrev="${item.abbrev}" data-chapter="${ch}" data-verse="${v}"><span class="verse-num">${v}</span>${text}${xrefIcon}</div>`;
           }
 
           html += '</div>';
@@ -1392,15 +1535,17 @@
           return;
         }
 
-        // Загрузить только нужные книги
+        // Загрузить только нужные книги + параллельные места
         const abbrevs = [...new Set(parsed.map(p => p.abbrev))];
         const loadedBooks = {};
-        await Promise.all(abbrevs.map(async (abbrev) => {
-          loadedBooks[abbrev] = await loadBook(abbrev);
-        }));
+        const loadedXrefs = {};
+        await Promise.all([
+          ...abbrevs.map(async (abbrev) => { loadedBooks[abbrev] = await loadBook(abbrev); }),
+          ...abbrevs.map(async (abbrev) => { loadedXrefs[abbrev] = await loadXref(abbrev); })
+        ]);
 
         document.title = query + ' — Библия';
-        content.innerHTML = renderTexts(parsed, loadedBooks);
+        content.innerHTML = renderTexts(parsed, loadedBooks, loadedXrefs);
         localStorage.setItem('bible-last-query', query);
         localStorage.setItem('bible-last-translation', currentTranslation);
       } catch (e) {
@@ -1494,6 +1639,22 @@
     }
 
     document.getElementById('content').addEventListener('click', async (e) => {
+      // Клик по ссылке параллельного места — навигация
+      if (e.target.classList.contains('xref-ref')) {
+        const q = e.target.dataset.query;
+        if (q) {
+          document.getElementById('query').value = queryToCyrillic(q);
+          showTexts();
+        }
+        return;
+      }
+      // Клик по иконке 🔗 — показать/скрыть панель
+      if (e.target.classList.contains('xref-icon')) {
+        e.stopPropagation();
+        const verse = e.target.closest('.verse');
+        if (verse) showXrefPanel(verse);
+        return;
+      }
       const verse = e.target.closest('.verse');
       if (!verse) return;
       const wasSelected = verse.classList.toggle('selected');

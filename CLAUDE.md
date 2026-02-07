@@ -19,7 +19,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 │       ├── jbl.json         # Jubilee translation — full (66 books, ~6MB, for search)
 │       ├── synodal/         # Synodal per-book files (for chapter display)
 │       ├── nrt/             # NRP per-book files (for chapter display)
-│       └── jbl/             # Jubilee per-book files (for chapter display)
+│       ├── jbl/             # Jubilee per-book files (for chapter display)
+│       └── xref/            # Cross-references per-book (from OpenBible.info, votes≥10)
 ├── data/                    # Source data & additional translations
 │   ├── RST+.SQLite3         # Synodal — SQLite source (with Strong's numbers)
 │   ├── NRT.SQLite3          # NRP — SQLite source
@@ -71,6 +72,7 @@ python3 -m http.server 8000
 
 **Settings gear (⚙️) in top-right corner:**
 - Translation: СИН / НРП / ЮБЛ (Synodal / NRP / Jubilee)
+- Comparison: checkboxes to choose which translations to show on verse click
 - Font size (A−/A+, range 12–28px, localStorage key `bible-font-size`)
 - Font family: serif/sans-serif/mono (localStorage key `bible-font-family`)
 - Dark/light theme (localStorage key `bible-dark-theme`)
@@ -82,7 +84,8 @@ python3 -m http.server 8000
 - Verse selection & copy: click verses to select, floating bar with "Копировать" button
   - Smart references: `5:1-3` (range), `5:1,4` (non-consecutive), `Бытие 1:5; Матфея 1:17` (cross-book)
   - Copy includes translation short name, e.g., `Бытие 1:2 (СИН)`
-- Verse comparison: clicking a verse shows the same verse from all other translations inline below it (2 comparison panels)
+- Verse comparison: clicking a verse shows the same verse from other translations inline below it (configurable in ⚙️)
+- Cross-references (parallel places): ⇄ icon next to verses with references; click shows panel with top 5 + "Ещё" button; text from current translation; click reference to navigate; data from OpenBible.info (42K refs, votes≥10, CC-BY)
 - Full Bible search (🔍 button or Ctrl+F): loads full translation file (~6MB, cached), inline translation switcher (СИН→НРП→ЮБЛ cycle), 3 tiers: exact phrase → all words → partial; click result to open chapter with auto-scroll to verse
 - Chapter navigation: prev/next buttons with short names at bottom (works across books), keyboard ←/→, swipe on mobile
 - Last reading memory: auto-loads last query+translation on empty open (localStorage keys `bible-last-query`, `bible-last-translation`)
@@ -103,6 +106,7 @@ python3 -m http.server 8000
 **Viewer data (viewer/data/):**
 - `synodal.json`, `nrt.json`, `jbl.json` — full translations for search (~6MB each)
 - `synodal/`, `nrt/`, `jbl/` — per-book files for chapter display (50-300KB each)
+- `xref/` — cross-references per-book (66 files, ~0.7MB total). Format: `{"ch:v": [["abbrev ch:v-v", votes], ...], ...}`. Source: OpenBible.info (CC-BY), filtered to votes≥10 (42K of 345K refs)
 - Format: `[{"abbrev": "gn", "chapters": [["verse1", ...], ...]}, ...]`
 - Per-book format: `[["verse1", "verse2", ...], ...]` (just chapters array)
 
@@ -134,6 +138,7 @@ No web deployment needed — runs via time trigger only.
 
 - **bolls.life:** `GET https://bolls.life/get-chapter/{SYNOD|NRT}/{book}/{chapter}/` — Free Bible API (used by download_nrt_incremental.py)
 - **bible.by:** `GET https://bible.by/jbl/{book}/{chapter}/` — Jubilee edition HTML (used by download_jbl.py; book numbering differs in NT: general epistles before Pauline)
+- **OpenBible.info:** `https://a.openbible.info/data/cross-references.zip` — Bible cross-references (CC-BY, 345K refs, TSV)
 - **ODB API:** Used by `GET_BIBLE_PLAN` spreadsheet function
 
 ## Configuration
