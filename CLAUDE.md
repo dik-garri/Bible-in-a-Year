@@ -12,13 +12,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ├── src/
 │   └── Code.gs              # Main bot code (Google Apps Script)
 ├── viewer/
-│   ├── index.html           # Local HTML viewer for Bible texts
+│   ├── index.html           # HTML viewer for Bible texts (GitHub Pages)
 │   └── data/
-│       ├── synodal.json     # Synodal translation (66 books, ~6MB)
-│       └── nrt.json         # NRP translation (66 books, ~6MB)
+│       ├── synodal.json     # Synodal translation — full (66 books, ~6MB, for search)
+│       ├── nrt.json         # NRP translation — full (66 books, ~6MB, for search)
+│       ├── synodal/         # Synodal per-book files (for chapter display)
+│       └── nrt/             # NRP per-book files (for chapter display)
+├── data/                    # Source data & additional translations (not used by viewer)
+│   ├── RST+.SQLite3         # Synodal — SQLite source (with Strong's numbers)
+│   ├── NRT.SQLite3          # NRP — SQLite source
+│   ├── JBL.SQLite3          # Jubilee edition — SQLite source
+│   ├── KYB.SQLite3          # Kyrgyz Bible — SQLite source
+│   ├── jbl.json + jbl/      # Jubilee edition — JSON (full + per-book)
+│   ├── kyb.json + kyb/      # Kyrgyz Bible — JSON (full + per-book)
+│   └── verse_count_diff.csv # Verse count differences across translations
 └── scripts/
-    ├── download_nrt_incremental.py  # Python script to download NRP via bolls.life API
-    └── fix_formatting.py            # Fix typography issues in Bible data
+    ├── download_nrt_incremental.py  # Download NRP via bolls.life API
+    ├── download_jbl.py              # Download Jubilee edition from bible.by
+    └── fix_formatting.py            # Fix typography issues (legacy, data now from SQLite)
 ```
 
 ## Bot (src/Code.gs)
@@ -84,38 +95,31 @@ python3 -m http.server 8000
 - `Бытие 1-2:3` — from ch.1 v.1 → ch.2 v.3
 - `Бытие 1; Матфея 1` — multiple books (semicolon-separated)
 
-## Bible Data (viewer/data/)
+## Bible Data
 
-**Full files** (for bulk operations):
-- `viewer/data/synodal.json`, `viewer/data/nrt.json` — all 66 books (~6MB each)
+**Data source:** SQLite databases in `data/` (RST+, NRT, JBL, KYB). JSON files are generated from SQLite using a conversion script that strips markup (Strong's numbers `<S>`, footnotes `<f>`, paragraph breaks `<pb/>`, emphasis `<i>/<e>/<J>` tags).
+
+**Viewer data (viewer/data/):**
+- `synodal.json`, `nrt.json` — full translations for search (~6MB each)
+- `synodal/`, `nrt/` — per-book files for chapter display (50-300KB each)
 - Format: `[{"abbrev": "gn", "chapters": [["verse1", ...], ...]}, ...]`
+- Per-book format: `[["verse1", "verse2", ...], ...]` (just chapters array)
 
-**Per-book files** (for viewer, optimized loading):
-- `viewer/data/synodal/{abbrev}.json`, `viewer/data/nrt/{abbrev}.json` — individual books (50-300KB each)
-- Format: `[["verse1", "verse2", ...], ...]` (just chapters array)
+**Additional translations (data/):**
+- `jbl.json` + `jbl/` — Jubilee edition (Юбилейное издание, Свет на Востоке, 2008)
+- `kyb.json` + `kyb/` — Kyrgyz Bible (Кыргыз тилиндеги Библия, 2004)
+
+**All translations:** 66 books, 1189 chapters, ~31162 verses each.
+
+**SQLite schema:** `books` (book_number, short_name, long_name), `verses` (book_number, chapter, verse, text). Book numbers are multiples of 10 (10=Gen, 20=Exo, ..., 730=Rev).
 
 **Book abbreviations:** gn, ex, lv, nm, dt, js, jud, rt, 1sm, 2sm, 1kgs, 2kgs, 1ch, 2ch, ezr, ne, et, job, ps, prv, ec, so, is, jr, lm, ez, dn, ho, jl, am, ob, jn, mi, na, hk, zp, hg, zc, ml, mt, mk, lk, jo, act, rm, 1co, 2co, gl, eph, ph, cl, 1ts, 2ts, 1tm, 2tm, tt, phm, hb, jm, 1pe, 2pe, 1jo, 2jo, 3jo, jd, re
 
-## Data Quality (scripts/fix_formatting.py)
+## Data Quality
 
-Original data from bolls.life API contained typography issues. Fixed with `fix_formatting.py`:
+Current data is sourced from SQLite databases (verified against print editions). Previous bolls.life data had 5229 text issues (3171 missing spaces, 1659 punctuation errors) — all resolved by switching to SQLite source.
 
-```bash
-python3 scripts/fix_formatting.py
-```
-
-**Issues fixed (10,338 total):**
-
-| Issue | Synodal | NRP | Example |
-|-------|---------|-----|---------|
-| `:—` → `: —` (direct speech) | 0 | 5,996 | `сказал:—` → `сказал: —` |
-| No space after `,` | 1,600 | 314 | `Нашему,и` → `Нашему, и` |
-| No space after `.` | 68 | 1,532 | `здесь.Иаков` → `здесь. Иаков` |
-| No space after `;` | 168 | 164 | `Симовых;Ханаан` → `Симовых; Ханаан` |
-| No space after `?` | 36 | 256 | `нами?что` → `нами? что` |
-| No space after `!` | 14 | 190 | `мне!И` → `мне! И` |
-
-Run after downloading new data or if issues reappear.
+Legacy script `fix_formatting.py` is kept for reference but no longer needed.
 
 ## Deployment (GAS)
 
@@ -128,7 +132,8 @@ No web deployment needed — runs via time trigger only.
 
 ## External APIs
 
-- **bolls.life:** `GET https://bolls.life/get-chapter/{SYNOD|NRT}/{book}/{chapter}/` — Free Bible API
+- **bolls.life:** `GET https://bolls.life/get-chapter/{SYNOD|NRT}/{book}/{chapter}/` — Free Bible API (used by download_nrt_incremental.py)
+- **bible.by:** `GET https://bible.by/jbl/{book}/{chapter}/` — Jubilee edition HTML (used by download_jbl.py; book numbering differs in NT: general epistles before Pauline)
 - **ODB API:** Used by `GET_BIBLE_PLAN` spreadsheet function
 
 ## Configuration
