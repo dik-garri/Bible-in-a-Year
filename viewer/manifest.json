@@ -1,0 +1,16 @@
+{
+    "name": "Библия — Читалка",
+    "short_name": "Библия",
+    "description": "Читайте Священное Писание онлайн — 3 перевода.",
+    "start_url": "/bible/",
+    "display": "standalone",
+    "background_color": "#f5f5f0",
+    "theme_color": "#4338ca",
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "48x48",
+            "type": "image/x-icon"
+        }
+    ]
+}
