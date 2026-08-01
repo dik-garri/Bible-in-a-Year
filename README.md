@@ -197,3 +197,7 @@ const todayStr = Utilities.formatDate(new Date(), "GMT+6", "dd-MM-yyyy");
 - **bible.by** — Юбилейное издание (HTML-парсинг)
 - **OpenBible.info** — перекрёстные ссылки (345K, фильтр votes≥10 → 42K, CC-BY)
 - **ODB API** — план чтения "Библия за год"
+
+---
+
+[Все проекты →](https://dik-garri.github.io/garry/)
